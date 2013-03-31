@@ -3,7 +3,7 @@ package com.outr.citonet.proxy
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.channel.{ChannelFutureListener, Channel}
+import io.netty.channel.{ChannelOption, ChannelFutureListener, Channel}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -15,6 +15,7 @@ class ProxyServer(localPort: Int, remoteHost: String, remotePort: Int) {
       bootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup())
                .channel(classOf[NioServerSocketChannel])
                .childHandler(new ProxyInitializer(remoteHost, remotePort))
+               .childOption(ChannelOption.AUTO_READ.asInstanceOf[ChannelOption[Any]], false)
                .bind(localPort).sync().channel().closeFuture().sync()
     } finally {
       bootstrap.shutdown()

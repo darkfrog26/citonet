@@ -1,7 +1,7 @@
 package com.outr.citonet.proxy
 
 import io.netty.channel._
-import io.netty.handler.codec.http.HttpRequest
+import io.netty.handler.codec.http.{HttpObject, HttpRequest}
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.buffer.BufUtil
@@ -9,15 +9,19 @@ import io.netty.buffer.BufUtil
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class ProxyInboundHandler(remoteHost: String, remotePort: Int) extends ChannelInboundMessageHandlerAdapter[HttpRequest] {
-  @volatile private var outboundChannel: Channel = _
+class ProxyInboundHandler(remoteHost: String, remotePort: Int) extends ChannelInboundMessageHandlerAdapter[HttpObject] {
+  private var outboundChannel: Channel = _
 
-  def messageReceived(context: ChannelHandlerContext, message: HttpRequest) = {
-    println("ProxyInboundHandler.messageReceived")
+  override def channelActive(ctx: ChannelHandlerContext) {
+    ctx.read()
+  }
+
+  def messageReceived(context: ChannelHandlerContext, message: HttpObject) = {
     val inboundChannel = context.channel()
 
     BufUtil.retain(message)
 
+    //TODO: You need to handle keep-alive etc
     // Attempt remote connection
     val bootstrap = new Bootstrap
     bootstrap.group(inboundChannel.eventLoop())
@@ -28,22 +32,17 @@ class ProxyInboundHandler(remoteHost: String, remotePort: Int) extends ChannelIn
     future.addListener(new ChannelFutureListener {
       def operationComplete(future: ChannelFuture) = {
         if (future.isSuccess) {         // Connected - start reading
-          println("Read / Write!")
-          outboundChannel.write(message)
-          inboundChannel.read()
+          outboundChannel.write(message).addListener(new ChannelFutureListener {
+            def operationComplete(future: ChannelFuture) {
+              context.channel.read()
+            }
+          })
         } else {                        // Failed to connect - close the connection
-          println("CLOSE!")
           inboundChannel.close()
-
           BufUtil.release(message)
         }
       }
     })
-  }
-
-  override def endMessageReceived(context: ChannelHandlerContext) = {
-    println("endMessageReceived!")
-    context.flush()
   }
 
   override def exceptionCaught(context: ChannelHandlerContext, cause: Throwable) = {

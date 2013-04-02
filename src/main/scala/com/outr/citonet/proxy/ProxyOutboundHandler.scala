@@ -8,7 +8,7 @@ import com.outr.citonet.proxy.ProxyServer._
 /**
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  */
-class ProxyOutboundHandler(channel: Channel) extends ChannelInboundMessageHandlerAdapter[HttpObject] {
+class ProxyOutboundHandler(channel: Channel, webSocket: Boolean) extends ChannelInboundMessageHandlerAdapter[HttpObject] {
   def messageReceived(ctx: ChannelHandlerContext, msg: HttpObject) {
     // Add the received response to the outbound buffer
     channel.write(BufUtil.retain(msg)).addListener(new ChannelFutureListener {
@@ -16,7 +16,9 @@ class ProxyOutboundHandler(channel: Channel) extends ChannelInboundMessageHandle
         ctx.channel.read()
 
         // This is only ok for non "keep-alive"
-        closeOnFlush(future.channel())
+        if (!webSocket) {
+          closeOnFlush(future.channel())
+        }
       }
     })
   }

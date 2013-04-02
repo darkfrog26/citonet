@@ -25,7 +25,7 @@ class ProxyServer(localPort: Int, remoteHost: String, remotePort: Int) {
 
 object ProxyServer {
   def main(args: Array[String]): Unit = {
-    val server = new ProxyServer(8888, "captiveimagination.com", 80)
+    val server = new ProxyServer(8888, "projectspeaker.com", 80)
     server.run()
   }
 

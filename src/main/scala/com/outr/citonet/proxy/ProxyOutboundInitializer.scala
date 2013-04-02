@@ -7,12 +7,12 @@ import io.netty.handler.codec.http._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class ProxyOutboundInitializer(inboundChannel: Channel) extends ChannelInitializer[SocketChannel] {
+class ProxyOutboundInitializer(inboundChannel: Channel, webSocket: Boolean) extends ChannelInitializer[SocketChannel] {
   def initChannel(channel: SocketChannel) {
     val p = channel.pipeline()
     p.addLast("encoder", new HttpClientCodec)
     // no need to aggregate as long as we not want to only operate on FullHttpRequest / FullHttpResponse
     p.addLast("aggregator", new HttpObjectAggregator(1048576))
-    p.addLast("handler", new ProxyOutboundHandler(inboundChannel))
+    p.addLast("handler", new ProxyOutboundHandler(inboundChannel, webSocket))
   }
 }

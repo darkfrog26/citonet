@@ -21,12 +21,13 @@ class ProxyInboundHandler(remoteHost: String, remotePort: Int) extends ChannelIn
 
     BufUtil.retain(message)
 
-    //TODO: You need to handle keep-alive etc
-    // Attempt remote connection
+    val webSocket = message match {
+      case request: HttpRequest => request.headers().get("Upgrade") == "websocket"
+    }
     val bootstrap = new Bootstrap
     bootstrap.group(inboundChannel.eventLoop())
              .channel(classOf[NioSocketChannel])
-             .handler(new ProxyOutboundInitializer(inboundChannel))
+             .handler(new ProxyOutboundInitializer(inboundChannel, webSocket))
     val future = bootstrap.connect(remoteHost, remotePort)
     outboundChannel = future.channel()
     future.addListener(new ChannelFutureListener {

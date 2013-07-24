@@ -1,37 +1,34 @@
 package com.outr.citonet.proxy
 
-import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.channel.{ChannelOption, ChannelFutureListener, Channel}
+import io.netty.channel.Channel
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class ProxyServer(localPort: Int, remoteHost: String, remotePort: Int) {
-  def run() = {
-    val bootstrap = new ServerBootstrap()
-    try {
-      bootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup())
-               .channel(classOf[NioServerSocketChannel])
-               .childHandler(new ProxyInitializer(remoteHost, remotePort))
-               .childOption(ChannelOption.AUTO_READ.asInstanceOf[ChannelOption[Any]], false)
-               .bind(localPort).sync().channel().closeFuture().sync()
-    } finally {
-      bootstrap.shutdown()
-    }
+class ProxyServer(val port: Int) {
+  val bossGroup = new NioEventLoopGroup
+  private var channel: Channel = _
+
+  def start() = {
+    channel = createChannel()
+  }
+
+  private def createChannel() = {
+    val bootstrap = new ServerBootstrap
+    bootstrap.group(bossGroup, Shared.workerGroup)
+             .channel(classOf[NioServerSocketChannel])
+             .childHandler(new ProxyServerChannelInitializer)
+    bootstrap.bind(port).sync().channel()
   }
 }
 
 object ProxyServer {
   def main(args: Array[String]): Unit = {
-    val server = new ProxyServer(8888, "projectspeaker.com", 80)
-    server.run()
-  }
-
-  def closeOnFlush(channel: Channel) = {
-    if (channel.isActive) {
-      channel.flush().addListener(ChannelFutureListener.CLOSE)
-    }
+    val server = new ProxyServer(3001)
+    server.start()
+    println("Server started...")
   }
 }

@@ -42,7 +42,7 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
   }
 
   private def handleWebSocketFrame(ctx: ChannelHandlerContext, frame: WebSocketFrame) = frame match {
-    case f: CloseWebSocketFrame => throw new RuntimeException("Unsupported!") //handshaker.close(ctx.channel(), f)
+    case f: CloseWebSocketFrame => new RuntimeException("Unsupported!").printStackTrace() //handshaker.close(ctx.channel(), f)
     case f: PingWebSocketFrame => ctx.channel().write(new PongWebSocketFrame(frame.content().retain()))
     case f: TextWebSocketFrame => {
       val remote = Shared.webSocketToRemote.get(ctx.channel())

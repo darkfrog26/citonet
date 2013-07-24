@@ -37,7 +37,7 @@ object ProxyRelayer extends Logging {
               def initChannel(ch: SocketChannel) = {
                 val pipeline = ch.pipeline()
                 pipeline.addLast("codec-http", new HttpClientCodec)
-                pipeline.addLast("aggregator", new HttpObjectAggregator(65536))
+                pipeline.addLast("aggregator", new HttpObjectAggregator(655360))
                 pipeline.addLast("handler", handler)
               }
             })
@@ -65,7 +65,7 @@ object ProxyRelayer extends Logging {
       def initChannel(ch: SocketChannel) = {
         val pipeline = ch.pipeline()
         pipeline.addLast("codec-http", new HttpClientCodec)
-        pipeline.addLast("aggregator", new HttpObjectAggregator(65536))
+        pipeline.addLast("aggregator", new HttpObjectAggregator(655360))
         pipeline.addLast("handler", handler)
       }
     })

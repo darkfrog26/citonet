@@ -22,9 +22,9 @@ case class URL(method: Method = Method.Get,
   lazy val domain = isIp match {
     case true => host
     case false => {
-      val split = host.split('.')
-      if (split.length > 1) {
-        "%s.%s".format(split(split.length - 2), split(split.length - 1))
+      val parts = host.split('.')
+      if (parts.length > 1) {
+        s"${parts(parts.length - 2)}.${parts(parts.length - 1)}"
       } else {
         host
       }
@@ -41,15 +41,9 @@ case class URL(method: Method = Method.Get,
     b.toString()
   }
 
-  lazy val base = {
-    val b = new StringBuilder
-    b.append(protocol)
-    b.append("://")
-    b.append(hostPort)
-    b.toString()
-  }
+  lazy val base = s"$protocol://$hostPort"
 
-  lazy val baseAndPath = "%s%s".format(base, path)
+  lazy val baseAndPath = s"$base$path"
 
   private lazy val s = {
     val b = new StringBuilder(baseAndPath)

@@ -5,7 +5,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-sealed class Method(val value: String) extends EnumEntry
+class Method private(val value: String) extends EnumEntry
 
 object Method extends Enumerated[Method] {
   val Get = new Method("get")

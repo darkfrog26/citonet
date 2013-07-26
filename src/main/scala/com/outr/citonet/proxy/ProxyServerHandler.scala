@@ -10,11 +10,12 @@ import io.netty.handler.codec.http.HttpVersion._
 import io.netty.handler.codec.http.HttpHeaders._
 import io.netty.handler.codec.http.HttpResponseStatus._
 import io.netty.handler.codec.http.HttpMethod._
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
+class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] with Logging {
   def channelRead0(ctx: ChannelHandlerContext, msg: AnyRef) = msg match {
     case req: FullHttpRequest => handleHttpRequest(ctx, req)
     case frame: WebSocketFrame => handleWebSocketFrame(ctx, frame)
@@ -29,7 +30,7 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
   }
 
   var handshaker: WebSocketServerHandshaker = _
-  val remoteHost = "outr.com"
+  val remoteHost = "projectspeaker.com"
   val remotePort = 80
 
   private def handleHttpRequest(ctx: ChannelHandlerContext, req: FullHttpRequest) = {
@@ -65,7 +66,7 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-    cause.printStackTrace()
+    error("An exception occurred in ProxyServerHandler", cause)
     ctx.close()
   }
 }

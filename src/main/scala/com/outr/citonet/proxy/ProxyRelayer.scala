@@ -15,7 +15,11 @@ import org.powerscala.log.Logging
  * @author Matt Hicks <matt@outr.com>
  */
 object ProxyRelayer extends Logging {
-  def relayWebSocket(remoteHost: String, remotePort: Int, ctx: ChannelHandlerContext, req: FullHttpRequest) = {
+  def relayWebSocket(serverHandler: ProxyServerHandler,
+                     remoteHost: String,
+                     remotePort: Int,
+                     ctx: ChannelHandlerContext,
+                     req: FullHttpRequest) = {
     val localUrl = s"ws://${req.headers().get(HOST)}${req.getUri}"
     val subprotocols: String = null
     val allowExtensions = false
@@ -24,6 +28,7 @@ object ProxyRelayer extends Logging {
     if (handshaker == null) {
       WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel())
     } else {
+      serverHandler.handshaker = handshaker
       handshaker.handshake(ctx.channel(), req).addListener(new ChannelFutureListener {
         def operationComplete(future: ChannelFuture) = {
           if (future.isSuccess) {
@@ -44,10 +49,13 @@ object ProxyRelayer extends Logging {
             bootstrap.option(ChannelOption.TCP_NODELAY, new java.lang.Boolean(true))
 
             val ch = bootstrap.connect(remoteHost, remotePort).sync().channel()   // TODO: use future
-            handler.handshakeFuture.sync()
-
             Shared.webSocketToRemote.put(ctx.channel(), ch)
-            Shared.webSocketToRemote.put(ch, ctx.channel())
+            Shared.remoteToWebSocket.put(ch, ctx.channel())
+            handler.handshakeFuture.addListener(new ChannelFutureListener {
+              def operationComplete(future: ChannelFuture) {
+                println(s"WebSocket Handshake Successful? ${future.isSuccess}")
+              }
+            })
           } else {
             info("WebSocket client handshake failure!")
           }

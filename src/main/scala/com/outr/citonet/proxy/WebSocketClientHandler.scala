@@ -20,12 +20,8 @@ class WebSocketClientHandler(handshaker: WebSocketClientHandshaker) extends Simp
         val webSocket = Shared.remoteToWebSocket.get(ctx.channel())
         webSocket.writeAndFlush(frame.retain(1))
         frame match {
-          case f: TextWebSocketFrame => println(s"Client received: ${f.text()}")
-          case f: PongWebSocketFrame => println("Client received pong")
-          case f: CloseWebSocketFrame => {
-            println("Client received close")
-            channel.close()
-          }
+          case f: CloseWebSocketFrame => channel.close()
+          case _ => // Ignore others
         }
       }
     }

@@ -28,6 +28,7 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
     // TODO: disconnect all clients
   }
 
+  var handshaker: WebSocketServerHandshaker = _
   val remoteHost = "outr.com"
   val remotePort = 80
 
@@ -35,15 +36,15 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
     if (!req.getDecoderResult.isSuccess) {
       sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST))
     } else if ("websocket".equals(req.headers().get("Upgrade")) && req.getMethod == GET) {
-      ProxyRelayer.relayWebSocket(remoteHost, remotePort, ctx, req)
+      ProxyRelayer.relayWebSocket(this, remoteHost, remotePort, ctx, req)
     } else {
       ProxyRelayer.relayHttpRequest(remoteHost, remotePort, ctx.channel(), req)
     }
   }
 
   private def handleWebSocketFrame(ctx: ChannelHandlerContext, frame: WebSocketFrame) = frame match {
-    case f: CloseWebSocketFrame => new RuntimeException("Unsupported!").printStackTrace() //handshaker.close(ctx.channel(), f)
-    case f: PingWebSocketFrame => ctx.channel().write(new PongWebSocketFrame(frame.content().retain()))
+    case f: CloseWebSocketFrame => handshaker.close(ctx.channel(), f)
+    case f: PingWebSocketFrame => ctx.channel().write(new PongWebSocketFrame(frame.content().retain(1)))
     case f: TextWebSocketFrame => {
       val remote = Shared.webSocketToRemote.get(ctx.channel())
       remote.writeAndFlush(frame.retain(1))
@@ -61,5 +62,10 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] {
 
     // TODO: validate isKeepAlive(req)?
     ctx.channel().writeAndFlush(res).addListener(ChannelFutureListener.CLOSE)
+  }
+
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+    cause.printStackTrace()
+    ctx.close()
   }
 }

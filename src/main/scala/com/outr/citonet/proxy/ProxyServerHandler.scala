@@ -44,7 +44,7 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] with Loggin
   }
 
   private def handleWebSocketFrame(ctx: ChannelHandlerContext, frame: WebSocketFrame) = frame match {
-    case f: CloseWebSocketFrame => handshaker.close(ctx.channel(), f)
+    case f: CloseWebSocketFrame => handshaker.close(ctx.channel(), f.retain(1))
     case f: PingWebSocketFrame => ctx.channel().write(new PongWebSocketFrame(frame.content().retain(1)))
     case f: TextWebSocketFrame => {
       val remote = Shared.webSocketToRemote.get(ctx.channel())

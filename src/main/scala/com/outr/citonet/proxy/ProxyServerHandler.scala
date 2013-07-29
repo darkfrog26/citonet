@@ -57,7 +57,6 @@ class ProxyServerHandler extends SimpleChannelInboundHandler[AnyRef] with Loggin
     if (res.getStatus.code() != 200) {
       val buf = Unpooled.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8)
       res.content().writeBytes(buf)
-      buf.release()
       setContentLength(res, res.content().readableBytes())
     }
 

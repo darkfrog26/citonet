@@ -5,6 +5,8 @@ import org.powerscala.concurrent.{Time, Pool}
 import scala.annotation.tailrec
 import org.powerscala.log.Logging
 import com.outr.citonet.{URL, Protocol}
+import java.io.{FileNotFoundException, File}
+import scala.xml.{Elem, XML}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -23,14 +25,14 @@ class ProxyServer(val port: Int,
       listen()
     }
   }
-  private var mappings = Map.empty[String, ProxyMapping]
-  private var default: String = null
+  val mappings = new ProxyMapping
+  var default: URL = null
 
   open()
   listenThread.start()
 
   private def open() = {
-    val address = if (hostname == null) {
+    val address = if (hostname == null || hostname == "") {
       new InetSocketAddress(port)
     } else {
       new InetSocketAddress(hostname, port)
@@ -65,25 +67,12 @@ class ProxyServer(val port: Int,
     connections -= connection
   }
 
-  def addMapping(mapping: ProxyMapping, default: Boolean = false) = synchronized {
-    mappings += mapping.domain -> mapping
-    if (default) {
-      this.default = mapping.domain
-    }
-  }
-
-  def removeMapping(mapping: ProxyMapping) = synchronized {
-    mappings -= mapping.domain
-  }
-
-  def getMapping(url: URL): Option[ProxyMapping] = {
-    val mapping = mappings.get(url.domain)
-    if (mapping.nonEmpty) {
-      mapping
-    } else if (default != null) {
-      mappings.get(default)
+  def getMapping(url: URL): Option[URL] = {
+    val proxy = mappings.get(url)
+    if (proxy.isEmpty) {
+      Option(default)
     } else {
-      None
+      proxy
     }
   }
 
@@ -95,9 +84,59 @@ class ProxyServer(val port: Int,
   }
 }
 
-object ProxyServer {
+object ProxyServer extends Logging {
+  def load(file: File) = {
+    if (!file.exists()) {
+      throw new FileNotFoundException(s"File ${file.getAbsolutePath} does not exist!")
+    }
+    val xml = XML.loadFile(file)
+
+    def attribute(elem: Elem, name: String, default: String) = {
+      val value = (elem \ s"@$name").text
+      if (value == null || value == "") {
+        default
+      } else {
+        value
+      }
+    }
+
+    val hostname = attribute(xml, "hostname", null)
+    val port = attribute(xml, "port", "8080").toInt
+    val backlog = attribute(xml, "backlog", "0").toInt
+    val timeout = attribute(xml, "timeout", "1000").toInt
+    val receiveBufferSize = attribute(xml, "receiveBufferSize", "1024").toInt
+    info(s"Configuration Loaded - Hostname: $hostname, Port: $port, Backlog: $backlog, Timeout: $timeout, Receive Buffer Size: $receiveBufferSize")
+    val server = new ProxyServer(port, hostname, backlog, timeout, receiveBufferSize)
+    (xml \ "proxy").foreach {
+      case elem: Elem => {
+        val proxyType = attribute(elem, "type", "host")
+        val remoteString = attribute(elem, "remote", null)
+        val remote = URL.parse(remoteString).getOrElse(throw new NullPointerException(s"Unable to parse URL: [$remoteString]"))
+        proxyType match {
+          case "host" => {
+            val hostname = attribute(elem, "value", null)
+            server.mappings.host(hostname, remote)
+          }
+          case "hostPort" => {
+            val hostname = attribute(elem, "host", null)
+            val port = attribute(elem, "port", "80").toInt
+            server.mappings.hostPort(hostname, port, remote)
+          }
+          case "domain" => {
+            val domain = attribute(elem, "value", null)
+            server.mappings.domain(domain, remote)
+          }
+          case _ => throw new RuntimeException(s"Unknown proxy type: $proxyType")
+        }
+      }
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    val server = new ProxyServer(port = 8888)
-    server.addMapping(ProxyMapping("outr.com", URL.parse("http://www.projectspeaker.com").get), default = true)
+//    val server = new ProxyServer(port = 8888)
+//    val url = URL.parse("http://www.projectspeaker.com").get
+//    server.default = url
+//    server.mappings.domain("outr.com", url)
+    load(new File("proxy.xml"))
   }
 }

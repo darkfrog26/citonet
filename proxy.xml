@@ -1,0 +1,5 @@
+<proxyServer hostname="" port="8888" backlog="0" timeout="1000" receiveBufferSize="1024">
+    <proxy type="domain" value="localhost" remote="http://www.projectspeaker.com" default="true"/>
+    <proxy type="host" value="dev.outr.com" remote="http://www.outr.com"/>
+    <proxy type="hostPort" host="dev.outr.com" port="8888" remote="http://www.hyperscala.org"/>
+</proxyServer>

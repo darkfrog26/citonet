@@ -35,11 +35,11 @@ class ProxyConnection(server: ProxyServer, socket: Socket, protocol: Protocol) e
       // Request the proxy address from ProxyServer
       server.getMapping(originURL) match {
         case Some(mapping) => {
-          destinationURL = mapping.destination
+          destinationURL = mapping
           debug(s"Proxying $originURL to $destinationURL")
 
           // Establish proxy connection
-          proxy = new Socket(mapping.destination.host, mapping.destination.port)
+          proxy = new Socket(destinationURL.host, destinationURL.port)
           // TODO: support connection timeout
           proxyInput = proxy.getInputStream
           proxyOutput = proxy.getOutputStream

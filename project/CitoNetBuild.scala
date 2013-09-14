@@ -2,15 +2,15 @@ import sbt._
 import Keys._
 
 object CitoNetBuild extends Build {
-  val powerScalaVersion = "1.6.0-SNAPSHOT"
+  val powerScalaVersion = "1.6.2-SNAPSHOT"
 
-  val powerScalaCore = "org.powerscala" %% "powerscala-core" % powerScalaVersion
-  val netty = "io.netty" % "netty-all" % "4.0.4.Final"
+  val powerScalaCore = "org.powerscala" %% "powerscala-property" % powerScalaVersion
+  val netty = "io.netty" % "netty-all" % "4.0.9.Final"
 
   val baseSettings = Defaults.defaultSettings ++ Seq(
     version := "1.0.0-SNAPSHOT",
     organization := "com.outr.citonet",
-    scalaVersion := "2.10.1",
+    scalaVersion := "2.10.2",
     libraryDependencies ++= Seq(
       powerScalaCore,
       netty

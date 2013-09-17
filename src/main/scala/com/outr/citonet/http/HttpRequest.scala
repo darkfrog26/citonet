@@ -1,11 +1,8 @@
 package com.outr.citonet.http
 
-import com.outr.citonet.{Protocol, URL, Method}
+import com.outr.citonet.URL
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class HttpRequest(method: Method,
-                       url: URL,
-                       protocol: Protocol,
-                       headers: HttpHeaders)
+case class HttpRequest(url: URL, headers: Map[String, String])

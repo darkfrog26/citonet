@@ -1,6 +1,9 @@
 package com.outr.citonet
 
 import java.net.{URLEncoder, URLDecoder}
+import com.outr.citonet.http.HttpParameters
+import java.net
+import org.powerscala.IO
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -10,45 +13,23 @@ case class URL(method: Method = Method.Get,
                host: String = "localhost",
                port: Int = 80,
                path: String = "/",
-               parameters: Map[String, List[String]] = Map.empty,
-               hash: String = null) {
-  lazy val ip: Option[(Int, Int, Int, Int)] = host match {
-    case URL.IpAddressRegex(a, b, c, d) => Some((a.toInt, b.toInt, c.toInt, d.toInt))
-    case _ => None
-  }
-
-  lazy val isIp = ip.nonEmpty
-
-  lazy val domain = isIp match {
-    case true => host
-    case false => {
-      val parts = host.split('.')
-      if (parts.length > 1) {
-        s"${parts(parts.length - 2)}.${parts(parts.length - 1)}"
-      } else {
-        host
-      }
-    }
-  }
-
-  lazy val hostPort = {
-    val b = new StringBuilder
-    b.append(host)
-    if (port != 80) {
-      b.append(':')
-      b.append(port)
-    }
-    b.toString()
-  }
-
+               parameters: HttpParameters = HttpParameters.Empty,
+               hash: String = null) extends HasHostAndPort {
   lazy val base = s"$protocol://$hostPort"
 
   lazy val baseAndPath = s"$base$path"
 
+  lazy val javaURL = new net.URL(toString)
+
+  /**
+   * Contacts the supplied URL and returns the response as a String.
+   */
+  def loadAsString() = IO.copy(javaURL)
+
   private lazy val s = {
     val b = new StringBuilder(baseAndPath)
-    if (parameters.nonEmpty) {
-      b.append(parameters.map {
+    if (parameters.values.nonEmpty) {
+      b.append(parameters.values.map {
         case (key, values) => values.map(value => "%s=%s".format(URLEncoder.encode(key, "utf-8"), URLEncoder.encode(value, "utf-8")))
       }.flatten.mkString("?", "&", ""))
     }
@@ -101,7 +82,7 @@ object URL {
           }
         }
       }
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = HttpParameters(parameters)))
     }
     case _ => None
   }

@@ -6,6 +6,7 @@ import java.io.{InputStream, OutputStream}
 import org.powerscala.concurrent.Executor
 import scala.annotation.tailrec
 import org.powerscala.log.Logging
+import com.outr.citonet.http.HttpParameters
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -128,7 +129,7 @@ object ProxyConnection {
     val hostLine = headers.find(s => s.startsWith("Host:")).getOrElse(throw new NullPointerException(s"Unable to find Host for [$data]"))
     val (method, path, parameters) = readRequestLine(requestLine)
     val (host, port) = readHostLine(hostLine)
-    URL(method, protocol, host, port, path, parameters, hash = null)
+    URL(method, protocol, host, port, path, HttpParameters(parameters), hash = null)
   }
 
   private def readRequestLine(line: String) = line match {

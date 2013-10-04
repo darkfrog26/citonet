@@ -1,6 +1,8 @@
 import sbt._
 import Keys._
 
+import net.thunderklaus.GwtPlugin._
+
 object CitoNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
     version := "1.0.0-SNAPSHOT",
@@ -25,15 +27,18 @@ object CitoNetBuild extends Build {
   private def createSettings(_name: String) = baseSettings ++ Seq(name := _name)
 
   lazy val root = Project("root", file("."), settings = createSettings("citonet"))
-    .aggregate(core, netty, servlet, proxy)
-  lazy val core = Project("core", file("core"), settings = createSettings("citonet-core"))
-  lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("citonet-communicator-client") ++ net.thunderklaus.GwtPlugin.gwtSettings)
+    .aggregate(communicatorClient, core, netty, servlet, proxy)
+  lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("citonet-communicator-client") ++ gwtSettings)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
+    .settings(gwtTemporaryPath <<= classDirectory in Compile)
+  lazy val core = Project("core", file("core"), settings = createSettings("citonet-core"))
+    .dependsOn(communicatorClient)
+    .settings(compile in Compile <<= (compile in Compile) dependsOn(gwtCompile in (communicatorClient, Gwt)))
   lazy val netty = Project("netty", file("netty"), settings = createSettings("citonet-netty"))
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Netty))
   lazy val servlet = Project("servlet", file("servlet"), settings = createSettings("citonet-servlet") ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, communicatorClient)
+    .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp, Dependencies.Servlet))
   lazy val proxy = Project("proxy", file("proxy"), settings = createSettings("citonet-proxy"))
     .dependsOn(core)

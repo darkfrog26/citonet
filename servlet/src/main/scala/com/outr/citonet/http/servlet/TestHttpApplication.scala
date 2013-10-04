@@ -11,7 +11,8 @@ import com.outr.citonet.http.filter.ClassLoadingLookupFilter
  */
 object TestHttpApplication extends HttpApplication {
   def init() = {
-    addFilter(ClassLoadingLookupFilter("/gwt/Communicator/", "communicator/", allowCaching = false))
+    println(getClass.getClassLoader.getResource("Communicator/hosted.html"))
+    addFilter(ClassLoadingLookupFilter("/Communicator/", "Communicator/", allowCaching = false))
   }
 
   protected def onReceive(request: HttpRequest) = {

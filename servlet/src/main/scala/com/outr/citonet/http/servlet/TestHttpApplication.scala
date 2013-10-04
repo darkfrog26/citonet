@@ -1,16 +1,16 @@
 package com.outr.citonet.http.servlet
 
 import com.outr.citonet.http._
-import com.outr.citonet.http.HttpRequest
-import com.outr.citonet.http.HttpResponse
-import com.outr.citonet.URL
+import com.outr.citonet.http.response.{FileResponseContent, HttpResponse}
+import com.outr.citonet.http.request.HttpRequest
+import java.io.File
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 object TestHttpApplication extends HttpApplication {
-  def onReceive(request: HttpRequest) = {
+  protected def onReceive(request: HttpRequest) = {
     println(s"URL: ${request.url.breakDown}, Headers: ${request.headers}")
-    HttpResponse("text/html", HttpResponseStatus.OK, URLResponseContent(URL.lookupResource("test.html")))
+    HttpResponse(content = FileResponseContent(new File("test.html")))
   }
 }

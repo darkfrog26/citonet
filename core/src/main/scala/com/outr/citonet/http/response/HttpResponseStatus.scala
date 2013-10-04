@@ -1,4 +1,4 @@
-package com.outr.citonet.http
+package com.outr.citonet.http.response
 
 import org.powerscala.enum.{EnumEntry, Enumerated}
 

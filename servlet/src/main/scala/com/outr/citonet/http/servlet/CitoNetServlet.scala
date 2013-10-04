@@ -20,7 +20,7 @@ class CitoNetServlet extends HttpServlet {
 
   override def doGet(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
     val request = ServletConversion.convert(servletRequest)
-    val response = application.onReceive(request)
+    val response = application.receive(request)
     ServletConversion.convert(response, servletResponse)
   }
 }

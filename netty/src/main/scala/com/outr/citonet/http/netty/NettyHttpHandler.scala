@@ -6,6 +6,8 @@ import io.netty.handler.codec.http.{HttpRequest => NettyHttpRequest, HttpHeaders
 import scala.collection.JavaConversions._
 import com.outr.citonet.http._
 import com.outr.citonet.{Protocol, URL, Method}
+import com.outr.citonet.http.response.{HttpResponseStatus, URLResponseContent}
+import com.outr.citonet.http.request.HttpRequest
 
 /**
  * @author Matt Hicks <matt@outr.com>

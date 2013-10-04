@@ -2,6 +2,8 @@ package com.outr.citonet.http.netty
 
 import com.outr.citonet.http._
 import com.outr.citonet.URL
+import com.outr.citonet.http.response.{HttpResponseStatus, URLResponseContent, HttpResponse}
+import com.outr.citonet.http.request.HttpRequest
 
 /**
  * @author Matt Hicks <matt@outr.com>

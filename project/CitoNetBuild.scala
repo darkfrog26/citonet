@@ -27,6 +27,8 @@ object CitoNetBuild extends Build {
   lazy val root = Project("root", file("."), settings = createSettings("citonet"))
     .aggregate(core, netty, servlet, proxy)
   lazy val core = Project("core", file("core"), settings = createSettings("citonet-core"))
+  lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("citonet-communicator-client") ++ net.thunderklaus.GwtPlugin.gwtSettings)
+    .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
   lazy val netty = Project("netty", file("netty"), settings = createSettings("citonet-netty"))
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Netty))

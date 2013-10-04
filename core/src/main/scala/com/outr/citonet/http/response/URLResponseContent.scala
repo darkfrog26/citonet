@@ -5,7 +5,9 @@ import com.outr.citonet.URL
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class URLResponseContent(url: URL, contentTypeOverride: String = null) extends StreamableResponseContent {
+case class URLResponseContent(url: URL,
+                              contentTypeOverride: String = null,
+                              allowCaching: Boolean = true) extends StreamableResponseContent {
   lazy val connection = url.javaURL.openConnection()
 
   lazy val input = connection.getInputStream
@@ -18,5 +20,5 @@ case class URLResponseContent(url: URL, contentTypeOverride: String = null) exte
 
   lazy val contentLength = connection.getContentLengthLong
 
-  lazy val lastModified = connection.getLastModified
+  lazy val lastModified = if (allowCaching) connection.getLastModified else -1L
 }

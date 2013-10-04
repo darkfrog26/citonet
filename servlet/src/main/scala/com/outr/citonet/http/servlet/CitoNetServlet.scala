@@ -16,11 +16,13 @@ class CitoNetServlet extends HttpServlet {
     val clazz: EnhancedClass = Class.forName(applicationClass)
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
     application = companion.asInstanceOf[HttpApplication]
+    application.init()
   }
 
   override def doGet(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
     val request = ServletConversion.convert(servletRequest)
     val response = application.receive(request)
-    ServletConversion.convert(response, servletResponse)
+    val gzip = request.headers.gzipSupport
+    ServletConversion.convert(response, servletResponse, gzip)
   }
 }

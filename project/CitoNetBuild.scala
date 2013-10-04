@@ -33,7 +33,7 @@ object CitoNetBuild extends Build {
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Netty))
   lazy val servlet = Project("servlet", file("servlet"), settings = createSettings("citonet-servlet") ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core)
+    .dependsOn(core, communicatorClient)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp, Dependencies.Servlet))
   lazy val proxy = Project("proxy", file("proxy"), settings = createSettings("citonet-proxy"))
     .dependsOn(core)

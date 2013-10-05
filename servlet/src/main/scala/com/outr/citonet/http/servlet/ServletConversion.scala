@@ -3,9 +3,11 @@ package com.outr.citonet.http.servlet
 import com.outr.citonet.{ArrayBufferPool, URL}
 import scala.collection.JavaConversions._
 import org.powerscala.IO
-import com.outr.citonet.http.response.{StreamableResponseContent, HttpResponse}
+import com.outr.citonet.http.response.HttpResponse
 import com.outr.citonet.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
+import com.outr.citonet.http.content.{StringContent, StreamableContent}
+import java.nio.charset.Charset
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -37,7 +39,9 @@ object ServletConversion {
       }
     }
     if (response.content != null) {
+      // Send the content type
       servletResponse.setContentType(response.content.contentType)
+      servletResponse.setCharacterEncoding("UTF-8")
       if (response.content.lastModified != -1) {    // Send last modified if available
         val date = "%1$ta, %1$te %1$tb %1$tY %1$tT %1$tZ".format(response.content.lastModified)
         servletResponse.setHeader("Last-Modified", date)
@@ -47,17 +51,26 @@ object ServletConversion {
       } else {
         servletResponse.setContentLength(response.content.contentLength.toInt)    // Only set content-length if not gzipping
       }
+
+      val outputStream = servletResponse.getOutputStream
+      val output = if (gzip) {
+        new GZIPServletOutputStream(outputStream)      // Use GZIP if supported
+      } else {
+        outputStream
+      }
       response.content match {
-        case content: StreamableResponseContent => {
+        case content: StreamableContent => {
           val input = content.input
-          val outputStream = servletResponse.getOutputStream
-          val output = if (gzip) {
-            new GZIPServletOutputStream(outputStream)      // Use GZIP if supported
-          } else {
-            outputStream
-          }
           ArrayBufferPool.use() {
             case buf => IO.stream(input, output, buf, closeOnComplete = true)
+          }
+        }
+        case content: StringContent => {
+          try {
+            output.write(content.value.getBytes(Charset.forName("UTF-8")))
+          } finally {
+            output.flush()
+            output.close()
           }
         }
       }

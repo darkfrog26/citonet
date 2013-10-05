@@ -1,4 +1,4 @@
-package com.outr.citonet.http.response
+package com.outr.citonet.http.content
 
 import java.io.{FileInputStream, File}
 import java.nio.file.Files
@@ -6,7 +6,9 @@ import java.nio.file.Files
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class FileResponseContent(file: File, contentTypeOverride: String = null) extends StreamableResponseContent {
+case class FileContent(file: File,
+                       contentTypeOverride: String = null,
+                       allowCaching: Boolean = true) extends StreamableContent {
   lazy val input = new FileInputStream(file)
   lazy val contentType = if (contentTypeOverride != null) {
     contentTypeOverride
@@ -14,5 +16,5 @@ case class FileResponseContent(file: File, contentTypeOverride: String = null) e
     Files.probeContentType(file.toPath)
   }
   lazy val contentLength = file.length()
-  lazy val lastModified = file.lastModified()
+  lazy val lastModified = if (allowCaching) file.lastModified() else -1L
 }

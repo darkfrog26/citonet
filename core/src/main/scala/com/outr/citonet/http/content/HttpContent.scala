@@ -1,9 +1,9 @@
-package com.outr.citonet.http.response
+package com.outr.citonet.http.content
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait ResponseContent {
+trait HttpContent {
   def contentType: String
   def contentLength: Long
   def lastModified: Long

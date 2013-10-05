@@ -1,10 +1,10 @@
-package com.outr.citonet.http.response
+package com.outr.citonet.http.content
 
 import java.io.InputStream
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait StreamableResponseContent extends ResponseContent {
+trait StreamableContent extends HttpContent {
   def input: InputStream
 }

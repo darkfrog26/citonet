@@ -6,8 +6,9 @@ import io.netty.handler.codec.http.{HttpRequest => NettyHttpRequest, HttpHeaders
 import scala.collection.JavaConversions._
 import com.outr.citonet.http._
 import com.outr.citonet.{Protocol, URL, Method}
-import com.outr.citonet.http.response.{HttpResponseStatus, URLResponseContent}
+import com.outr.citonet.http.response.HttpResponseStatus
 import com.outr.citonet.http.request.HttpRequest
+import com.outr.citonet.http.content.URLContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -20,7 +21,7 @@ class NettyHttpHandler(support: NettyHttpSupport) extends SimpleChannelInboundHa
 //      val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, NettyHttpHandler.statusConverter(response.status))
 //      nettyResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, response.contentType)
       response.content match {
-        case c: URLResponseContent => {
+        case c: URLContent => {
           NettyRequestHandler.streamURL(c.url.javaURL, ctx, nettyRequest, response.contentType)
         }
       }

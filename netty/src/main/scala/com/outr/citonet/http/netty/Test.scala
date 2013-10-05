@@ -2,8 +2,9 @@ package com.outr.citonet.http.netty
 
 import com.outr.citonet.http._
 import com.outr.citonet.URL
-import com.outr.citonet.http.response.{HttpResponseStatus, URLResponseContent, HttpResponse}
+import com.outr.citonet.http.response.{HttpResponseStatus, HttpResponse}
 import com.outr.citonet.http.request.HttpRequest
+import com.outr.citonet.http.content.URLContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -11,7 +12,7 @@ import com.outr.citonet.http.request.HttpRequest
 object Test extends HttpApplication {
   def onReceive(request: HttpRequest) = {
     println(s"URL: ${request.url.breakDown}, Headers: ${request.headers}")
-    HttpResponse("text/html", HttpResponseStatus.OK, URLResponseContent(URL.lookupResource("test.html")))
+    HttpResponse("text/html", HttpResponseStatus.OK, URLContent(URL.lookupResource("test.html")))
   }
 
   def main(args: Array[String]): Unit = {

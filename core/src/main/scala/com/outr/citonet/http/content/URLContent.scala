@@ -1,13 +1,13 @@
-package com.outr.citonet.http.response
+package com.outr.citonet.http.content
 
 import com.outr.citonet.URL
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class URLResponseContent(url: URL,
-                              contentTypeOverride: String = null,
-                              allowCaching: Boolean = true) extends StreamableResponseContent {
+case class URLContent(url: URL,
+                      contentTypeOverride: String = null,
+                      allowCaching: Boolean = true) extends StreamableContent {
   lazy val connection = url.javaURL.openConnection()
 
   lazy val input = connection.getInputStream

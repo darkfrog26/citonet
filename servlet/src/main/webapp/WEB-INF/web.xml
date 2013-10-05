@@ -11,7 +11,7 @@
         <servlet-class>com.outr.citonet.http.servlet.CitoNetServlet</servlet-class>
         <init-param>
             <param-name>application</param-name>
-            <param-value>com.outr.citonet.http.servlet.TestHttpApplication</param-value>
+            <param-value>com.outr.citonet.http.servlet.TestWebApplication</param-value>
         </init-param>
     </servlet>
 

@@ -8,10 +8,10 @@
 
     <servlet>
         <servlet-name>cito</servlet-name>
-        <servlet-class>com.outr.citonet.http.servlet.CitoNetServlet</servlet-class>
+        <servlet-class>com.outr.net.http.servlet.CitoNetServlet</servlet-class>
         <init-param>
             <param-name>application</param-name>
-            <param-value>com.outr.citonet.http.servlet.TestWebApplication</param-value>
+            <param-value>com.outr.net.http.servlet.TestWebApplication</param-value>
         </init-param>
     </servlet>
 

@@ -32,7 +32,7 @@ trait FilteredApplication extends HttpApplication {
   }
 
   def addFilter[F <: HttpFilter](filter: F): F = synchronized {
-    _filters = (filter :: _filters.reverse).reverse.sortBy(f => f.priority)
+    _filters = (filter :: filters).sortBy(f => f.priority).reverse
     filter
   }
 

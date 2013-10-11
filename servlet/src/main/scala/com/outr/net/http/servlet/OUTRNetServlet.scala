@@ -9,7 +9,7 @@ import org.powerscala.log.Logging
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class CitoNetServlet extends HttpServlet with Logging {
+class OUTRNetServlet extends HttpServlet with Logging {
   private var application: HttpApplication = _
 
   override def init(config: ServletConfig) = {

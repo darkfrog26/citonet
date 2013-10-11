@@ -51,11 +51,11 @@ public class AJAXConnection implements Connection {
         }
     };
 
-    public AJAXConnection(Communicator communicator, String pollURL, String sendURL) {
+    public AJAXConnection(Communicator communicator, String ajaxURL) {
         this.communicator = communicator;
-        pollBuilder = new RequestBuilder(RequestBuilder.GET, pollURL);
+        pollBuilder = new RequestBuilder(RequestBuilder.GET, ajaxURL);
         pollBuilder.setTimeoutMillis(60000);
-        sendBuilder = new RequestBuilder(RequestBuilder.GET, sendURL);
+        sendBuilder = new RequestBuilder(RequestBuilder.POST, ajaxURL);
         sendBuilder.setTimeoutMillis(10000);
     }
 

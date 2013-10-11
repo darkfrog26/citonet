@@ -7,16 +7,16 @@
         >
 
     <servlet>
-        <servlet-name>cito</servlet-name>
-        <servlet-class>com.outr.net.http.servlet.CitoNetServlet</servlet-class>
+        <servlet-name>outrnet</servlet-name>
+        <servlet-class>com.outr.net.http.servlet.OUTRNetServlet</servlet-class>
         <init-param>
             <param-name>application</param-name>
-            <param-value>com.outr.net.http.servlet.TestWebApplication</param-value>
+            <param-value>com.outr.net.examples.ExampleWebApplication</param-value>
         </init-param>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>cito</servlet-name>
+        <servlet-name>outrnet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 

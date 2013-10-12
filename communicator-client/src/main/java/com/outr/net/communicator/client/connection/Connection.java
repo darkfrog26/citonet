@@ -6,5 +6,9 @@ package com.outr.net.communicator.client.connection;
 public interface Connection {
     public void connect();
 
-    public void send(Object data);
+    /**
+     * Invoked by ConnectionManager to let the connection know that a new message was added to the message queue for
+     * sending.
+     */
+    public void messageReady();
 }

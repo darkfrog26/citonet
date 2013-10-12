@@ -1,0 +1,74 @@
+package com.outr.net.communicator.client.connection;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * @author Matt Hicks <matt@outr.com>
+ */
+public class MessageQueue {
+    private int incrementor = 0;
+    private final List<Message> queue = new ArrayList<Message>();
+    private final List<Message> sent = new ArrayList<Message>();
+
+    /**
+     * Enqueues a message to be sent
+     *
+     * @param value the value to be sent
+     */
+    public void enqueue(Object value) {
+        queue.add(new Message(++incrementor, value));
+    }
+
+    public void enqueueHighPriority(Object value) {
+        queue.add(0, new Message(-1, value));
+    }
+
+    /**
+     * Retrieves and removes the next available message from the queue for sending. The message is then moved into the
+     * sent queue for later removal or access.
+     *
+     * @return the next available message or null
+     */
+    public Message next() {
+        if (queue.isEmpty()) {
+            return null;
+        }
+        Message message = queue.remove(0);
+        sent.add(message);
+        return message;
+    }
+
+    public boolean hasNext() {
+        return !queue.isEmpty();
+    }
+
+    public int waiting() {
+        return queue.size();
+    }
+
+    /**
+     * Confirms receipt of all messages up to and including the supplied id.
+     *
+     * @param id the last id confirmed receipt that can be removed.
+     */
+    public void confirm(int id) {
+        Iterator<Message> iterator = sent.iterator();
+        while (iterator.hasNext()) {
+            Message message = iterator.next();
+            if (message.id <= id) {
+                iterator.remove();
+            }
+        }
+    }
+
+    /**
+     * Lets the system know that a message send failed and the "sent" messages should be added back to the queue for
+     * sending.
+     */
+    public void failed() {
+        queue.addAll(0, sent);
+        sent.clear();
+    }
+}

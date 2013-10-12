@@ -11,6 +11,12 @@ import java.util.Map;
  * @author Matt Hicks <matt@outr.com>
  */
 public class JSONConverter {
+    private static final List<JSONSupport> supportList = new ArrayList<JSONSupport>();
+
+    public static void add(JSONSupport support) {
+        supportList.add(support);
+    }
+
     public static JSONValue toJSONValue(Object obj) {
         if (obj instanceof List) {
             List<Object> list = (List<Object>)obj;
@@ -37,6 +43,12 @@ public class JSONConverter {
         } else if (obj instanceof Boolean) {
             return JSONBoolean.getInstance((Boolean)obj);
         } else {
+            for (JSONSupport support : supportList) {
+                JSONValue value = support.toJSON(obj);
+                if (value != null) {
+                    return value;
+                }
+            }
             log("Unsupported object type during JSON conversion: " + obj.getClass());
             return JSONNull.getInstance();
         }

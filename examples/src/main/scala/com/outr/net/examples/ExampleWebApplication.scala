@@ -12,7 +12,7 @@ object ExampleWebApplication extends WebApplication {
   def init() = {
     addClassPath("/", "html/")
     addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))
-    addClassPath("/Communicator/", "Communicator/")
+    addClassPath("/GWTCommunicator/", "GWTCommunicator/")
     addHandler("/Communicator/connect.html", CommunicatorHandler)
   }
 }

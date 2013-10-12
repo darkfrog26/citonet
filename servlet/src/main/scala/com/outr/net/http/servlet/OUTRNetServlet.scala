@@ -10,7 +10,7 @@ import org.powerscala.log.{Level, Logging}
  * @author Matt Hicks <matt@outr.com>
  */
 class OUTRNetServlet extends HttpServlet with Logging {
-  logger.configure {
+  logger.configure {    // TODO: why isn't this working?
     case l => l.withLevel(Level.Debug)
   }
 
@@ -35,7 +35,7 @@ class OUTRNetServlet extends HttpServlet with Logging {
   def handle(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
     val request = ServletConversion.convert(servletRequest)
     try {
-      info(s"Request: $request")
+      debug(s"Request: $request")
       val response = application.receive(request)
       val gzip = request.headers.gzipSupport
       ServletConversion.convert(response, servletResponse, gzip)

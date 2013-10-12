@@ -1,7 +1,7 @@
 package com.outr.net.communicator.client.connection;
 
 import com.google.gwt.http.client.*;
-import com.outr.net.communicator.client.Communicator;
+import com.outr.net.communicator.client.GWTCommunicator;
 import com.outr.net.communicator.client.JSONConverter;
 
 import java.util.ArrayList;
@@ -13,52 +13,53 @@ import java.util.Map;
  * @author Matt Hicks <matt@outr.com>
  */
 public class AJAXConnection implements Connection {
-    private final Communicator communicator;
+    private final ConnectionManager manager;
     private final RequestBuilder pollBuilder;
     private final RequestBuilder sendBuilder;
-
-    private List<Object> sendQueue = new ArrayList<Object>();
-    private List<Object> sentQueue = new ArrayList<Object>();
 
     private Request pollRequest;
     private Request sendRequest;
     private RequestCallback pollCallback = new RequestCallback() {
         @Override
         public void onResponseReceived(Request request, Response response) {
-            pollRequest = null;
-            // TODO: process data incoming
-            Communicator.log("Received: " + response.getText());
-            ArrayList<Map<String, Object>> data = (ArrayList<Map<String, Object>>)JSONConverter.fromString(response.getText());
-            Communicator.log("Converted: " + data.size() + ", " + data.get(0).get("data"));
-            // TODO: reconnect after validating proper response
+            if (response.getStatusCode() == 200) {
+                pollRequest = null;
+                // TODO: process data incoming
+                GWTCommunicator.log("Received (" + response.getStatusCode() + "): " + response.getText());
+                ArrayList<Map<String, Object>> data = (ArrayList<Map<String, Object>>)JSONConverter.fromString(response.getText());
+                GWTCommunicator.log("Converted: " + data.size() + ", " + data.get(0).get("data"));
+                // TODO: reconnect after validating proper response
+            } else {
+                pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
+            }
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
-            Communicator.log("Error received from poll!");
-            // TODO: log error polling
-            // TODO: delayed retry
+            pollError(exception.getMessage());
         }
     };
     private RequestCallback sendCallback = new RequestCallback() {
         @Override
         public void onResponseReceived(Request request, Response response) {
-            Communicator.log("Response received from send! " + response.getText());
-            sendRequest = null;
+            if (response.getStatusCode() == 200) {
+                GWTCommunicator.log("Response received from send! " + response.getText());
+                sendRequest = null;
+                sendData();                         // Send more data if there is more to send to the server
+            } else {
+                sendError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
+            }
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
-            Communicator.log("Error received from send!");
-            // TODO: add sentQueue back to sendQueue
-            // TODO: log error sending
-            // TODO: delayed retry
+            sendError(exception.getMessage());
         }
     };
 
-    public AJAXConnection(Communicator communicator, String ajaxURL) {
-        this.communicator = communicator;
-        pollBuilder = new RequestBuilder(RequestBuilder.GET, ajaxURL);
+    public AJAXConnection(ConnectionManager manager, String ajaxURL) {
+        this.manager = manager;
+        pollBuilder = new RequestBuilder(RequestBuilder.POST, ajaxURL);
         pollBuilder.setTimeoutMillis(60000);
         sendBuilder = new RequestBuilder(RequestBuilder.POST, ajaxURL);
         sendBuilder.setTimeoutMillis(10000);
@@ -67,38 +68,57 @@ public class AJAXConnection implements Connection {
     @Override
     public void connect() {
         connectPolling();
+        sendData();
     }
 
     private void connectPolling() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("id", manager.uuid);
+        map.put("type", "receive");
+        map.put("lastReceiveId", manager.getLastReceiveId());
+        String json = JSONConverter.toJSONValue(map).toString();
         try {
-            pollRequest = pollBuilder.sendRequest(null, pollCallback);
-            sendRequest = sendBuilder.sendRequest("{\"test\": \"true\"}", sendCallback);
+            pollRequest = pollBuilder.sendRequest(json, pollCallback);
         } catch(RequestException exc) {
-            Communicator.log("PollingRequestError: " + exc.getMessage());
+            GWTCommunicator.log("PollingRequestError: " + exc.getMessage());
         }
     }
 
     private void sendData() {
-        if (!sendQueue.isEmpty()) {
+        if (sendRequest == null && manager.queue.hasNext()) {
             Map<String, Object> map = new HashMap<String, Object>();
-            map.put("id", null);
-            map.put("data", sendQueue);
+            map.put("id", manager.uuid);
+            map.put("type", "send");
+            List<Message> messages = new ArrayList<Message>(manager.queue.waiting());
+            while (manager.queue.hasNext()) {
+                messages.add(manager.queue.next());
+            }
+            map.put("messages", messages);
+
             String json = JSONConverter.toJSONValue(map).toString();
             try {
                 sendRequest = sendBuilder.sendRequest(json, sendCallback);
-                sentQueue = sendQueue;
-                sendQueue = new ArrayList<Object>();
             } catch(RequestException exc) {
-                Communicator.log("SendRequestError: " + exc.getMessage());
+                GWTCommunicator.log("SendRequestError: " + exc.getMessage());
             }
         }
     }
 
     @Override
-    public void send(Object data) {
-        sendQueue.add(data);
-        if (sendRequest == null) {      // Nothing currently sending
-            sendData();
-        }
+    public void messageReady() {
+        sendData();
+    }
+
+    private void pollError(String error) {
+        GWTCommunicator.log("Error received from poll: " + error);
+        // TODO: log error polling
+        // TODO: delayed retry
+    }
+
+    private void sendError(String error) {
+        GWTCommunicator.log("Error received from send: " + error);
+        // TODO: add sentQueue back to sendQueue
+        // TODO: log error sending
+        // TODO: delayed retry
     }
 }

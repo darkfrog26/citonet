@@ -1,6 +1,6 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.5//EN"
         "http://google-web-toolkit.googlecode.com/svn/releases/2.5/distro-source/core/src/gwt-module.dtd">
-<module rename-to="Communicator">
+<module rename-to="GWTCommunicator">
     <!-- Inherit the core Web Toolkit stuff.                  -->
     <inherits name="com.google.gwt.core.Core" />
     <inherits name='com.google.gwt.user.User' />
@@ -10,7 +10,7 @@
     <inherits name="com.google.gwt.json.JSON"/>
 
     <!-- Specify the app entry point class.                   -->
-    <entry-point class="com.outr.net.communicator.client.Communicator"/>
+    <entry-point class="com.outr.net.communicator.client.GWTCommunicator"/>
 
     <!-- Comment out the following before production builds -->
 

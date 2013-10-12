@@ -54,12 +54,12 @@ public class Communicator implements EntryPoint {
     }
 
     public static native void log(String message) /*-{
-        console.log(message);
+        $wnd.console.log(message);
     }-*/;
 
     private native void initialize() /*-{
         var c = this;
-        $wnd.communicator = {
+        $wnd.GWTCommunicator = {
             connect: function(settings) {
                 c.@com.outr.net.communicator.client.Communicator::connect(Lcom/google/gwt/core/client/JavaScriptObject;)(settings);
             }

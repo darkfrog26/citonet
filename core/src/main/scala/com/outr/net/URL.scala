@@ -8,8 +8,7 @@ import com.outr.net.http.HttpParameters
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class URL(method: Method = Method.Get,
-               protocol: Protocol = Protocol.Http,
+case class URL(protocol: Protocol = Protocol.Http,
                host: String = "localhost",
                port: Int = 80,
                path: String = "/",
@@ -40,7 +39,7 @@ case class URL(method: Method = Method.Get,
     b.toString()
   }
 
-  def breakDown = s"method = $method, protocol: $protocol, host: $host, port: $port, path: $path, parameters: $parameters, hash: $hash"
+  def breakDown = s"protocol: $protocol, host: $host, port: $port, path: $path, parameters: $parameters, hash: $hash"
 
   override def toString = s
 }

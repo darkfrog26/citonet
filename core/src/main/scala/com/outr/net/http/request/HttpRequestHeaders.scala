@@ -16,3 +16,7 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders {
 
   def date(key: String) = values.get(key).map(HttpApplication.DateParser.parse).map(d => d.getTime)
 }
+
+object HttpRequestHeaders {
+  lazy val Empty = HttpRequestHeaders(Map.empty)
+}

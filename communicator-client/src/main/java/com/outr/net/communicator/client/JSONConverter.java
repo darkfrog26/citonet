@@ -42,6 +42,11 @@ public class JSONConverter {
         }
     }
 
+    public static Object fromString(String json) {
+        JSONValue value = JSONParser.parseStrict(json);
+        return fromJSONValue(value);
+    }
+
     public static Object fromJSONValue(JSONValue value) {
         if (value instanceof JSONArray) {
             JSONArray array = value.isArray();

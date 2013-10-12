@@ -1,12 +1,12 @@
 package com.outr.net.http.servlet
 
-import com.outr.net.{ArrayBufferPool, URL}
+import com.outr.net.{Method, ArrayBufferPool, URL}
 import scala.collection.JavaConversions._
 import org.powerscala.IO
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
-import com.outr.net.http.content.{StringContent, StreamableContent}
+import com.outr.net.http.content.{InputStreamContent, StringContent, StreamableContent}
 import java.nio.charset.Charset
 
 /**
@@ -16,8 +16,15 @@ object ServletConversion {
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]"))
+    val method = Method(servletRequest.getMethod)
     val headers = servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap
-    HttpRequest(url, HttpRequestHeaders(headers))
+    val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
+      Some(InputStreamContent(servletRequest.getInputStream, servletRequest.getContentType, servletRequest.getContentLength, lastModified = -1L))
+    } else {
+      None
+    }
+    val request = HttpRequest(url, method, HttpRequestHeaders(headers), content = content)
+    request
   }
 
   def convert(response: HttpResponse, servletResponse: javax.servlet.http.HttpServletResponse, gzip: Boolean) = {

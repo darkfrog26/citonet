@@ -2,12 +2,29 @@
 <head>
     <title>Communicator Example</title>
     <script type="text/javascript" language="javascript" src="Communicator/Communicator.nocache.js"></script>
+    <script type="text/javascript" language="javascript" src="communicator.js"></script>
     <script type="text/javascript" language="javascript">
-        function communicatorReady() {
-            communicator.connect({
-                test: 'hello'
-            });
-        }
+        var communicator = new Communicator();
+        communicator.connect({
+            test: 'Hello World!'
+        });
+//        function communicatorReady() {
+//            communicator.connect({
+//                test: 'hello'
+//            });
+//            communicator.on('connect', function() {
+//                console.log('Connected!');
+//            });
+//            communicator.on('error', function(err) {
+//                console.log('Error occurred! ' + err);
+//            });
+//            communicator.on('received', function(msg) {
+//                console.log('Received: ' + JSON.stringify(msg));
+//            });
+//            communicator.send('test', {
+//                msg: "This is a test message!"
+//            });
+//        }
     </script>
 </head>
 <body>

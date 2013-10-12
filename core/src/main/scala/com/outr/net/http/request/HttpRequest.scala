@@ -1,22 +1,37 @@
 package com.outr.net.http.request
 
-import com.outr.net.URL
+import com.outr.net.{Method, URL}
 import com.outr.net.http.Cookie
+import com.outr.net.http.content.HttpContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class HttpRequest(url: URL, headers: HttpRequestHeaders, cookies: Map[String, Cookie]) {
+class HttpRequest(val url: URL,
+                  val method: Method,
+                  val headers: HttpRequestHeaders,
+                  val cookies: Map[String, Cookie],
+                  val content: Option[HttpContent]) {
   def cookie(name: String) = cookies.get(name)
+
+  override def toString = s"$url ($method)"
 }
 
 object HttpRequest {
-  def apply(url: URL, headers: HttpRequestHeaders): HttpRequest = {
-    val cookies = headers.values.get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
-      case Some(c) => c
-      case None => Map.empty[String, Cookie]
+  def apply(url: URL,
+            method: Method = Method.Get,
+            headers: HttpRequestHeaders = HttpRequestHeaders.Empty,
+            cookies: Map[String, Cookie] = null,
+            content: Option[HttpContent] = None): HttpRequest = {
+    val _cookies = if (cookies != null) {
+      cookies
+    } else {
+      headers.values.get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
+        case Some(c) => c
+        case None => Map.empty[String, Cookie]
+      }
     }
-    apply(url, headers, cookies)
+    new HttpRequest(url, method, headers, _cookies, content)
   }
 
   private def parseCookie(s: String) = {

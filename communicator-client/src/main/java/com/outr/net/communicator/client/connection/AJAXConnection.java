@@ -28,11 +28,14 @@ public class AJAXConnection implements Connection {
             pollRequest = null;
             // TODO: process data incoming
             Communicator.log("Received: " + response.getText());
+            ArrayList<Map<String, Object>> data = (ArrayList<Map<String, Object>>)JSONConverter.fromString(response.getText());
+            Communicator.log("Converted: " + data.size() + ", " + data.get(0).get("data"));
             // TODO: reconnect after validating proper response
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
+            Communicator.log("Error received from poll!");
             // TODO: log error polling
             // TODO: delayed retry
         }
@@ -40,11 +43,13 @@ public class AJAXConnection implements Connection {
     private RequestCallback sendCallback = new RequestCallback() {
         @Override
         public void onResponseReceived(Request request, Response response) {
+            Communicator.log("Response received from send! " + response.getText());
             sendRequest = null;
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
+            Communicator.log("Error received from send!");
             // TODO: add sentQueue back to sendQueue
             // TODO: log error sending
             // TODO: delayed retry
@@ -67,6 +72,7 @@ public class AJAXConnection implements Connection {
     private void connectPolling() {
         try {
             pollRequest = pollBuilder.sendRequest(null, pollCallback);
+            sendRequest = sendBuilder.sendRequest("{\"test\": \"true\"}", sendCallback);
         } catch(RequestException exc) {
             Communicator.log("PollingRequestError: " + exc.getMessage());
         }

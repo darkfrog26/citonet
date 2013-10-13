@@ -21,6 +21,7 @@ public class ConnectionManager {
         this.communicator = communicator;
         uuid = UUID.unique();
         queue = new MessageQueue();
+        queue.enqueueHighPriority("create");
     }
 
     public boolean isConnected() {

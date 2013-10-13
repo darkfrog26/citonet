@@ -22,7 +22,11 @@ public class MessageQueue {
     }
 
     public void enqueueHighPriority(Object value) {
-        queue.add(0, new Message(-1, value));
+        int index = 0;
+        while (queue.size() > index && queue.get(index).id == -1) {
+            index++;
+        }
+        queue.add(index, new Message(-1, value));
     }
 
     /**

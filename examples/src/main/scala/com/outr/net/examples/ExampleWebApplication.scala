@@ -2,7 +2,7 @@ package com.outr.net.examples
 
 import com.outr.net._
 import com.outr.net.http.WebApplication
-import com.outr.net.communicator.server.Communicator
+import com.outr.net.communicator.server.{PongResponder, Communicator}
 import com.outr.net.http.content.URLContent
 import org.powerscala.log.Logging
 
@@ -10,6 +10,8 @@ import org.powerscala.log.Logging
  * @author Matt Hicks <matt@outr.com>
  */
 object ExampleWebApplication extends WebApplication with Logging {
+  PongResponder.connect()     // Support ping-pong
+
   def init() = {
     addClassPath("/", "html/")
     addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))

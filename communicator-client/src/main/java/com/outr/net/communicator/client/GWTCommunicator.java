@@ -62,7 +62,6 @@ public class GWTCommunicator implements EntryPoint {
             for (Map.Entry<String, JavaScriptObject> entry : setting("on", new HashMap<String, JavaScriptObject>()).entrySet()) {
                 on(entry.getKey(), get(json, "on." + entry.getKey()));
             }
-            log("Settings created successfully! " + settings);
             // TODO: handle connection already exists
 
             connectionManager.connect();

@@ -52,7 +52,6 @@ object Communicator extends HttpHandler with Logging with Listenable {
     }
     val id = data("id").asInstanceOf[String]
     val messageType = data("type").asInstanceOf[String]
-//    println(s"Communication received: $request - Data: $data")
 
     val json = try {
       messageType match {
@@ -75,7 +74,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
   }
 
   private def receive(request: HttpRequest, id: String, lastReceiveId: Int) = {
-//    info(s"Receive: $id, $lastReceiveId, $request")
+    debug(s"Receive: $id, $lastReceiveId, $request")
 
     Time.waitFor(waitForConnectionTime()) {    // Wait for a short period for the connection to be created if it doesn't exist
       connections.contains(id)
@@ -91,7 +90,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
 
   // Handles "send" coming from client
   private def send(request: HttpRequest, id: String, messages: List[Message]) = {
-    info(s"Send: $id, $messages")
+    debug(s"Send: $id, $messages")
 
     processMessages(id, messages)
 

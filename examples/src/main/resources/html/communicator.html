@@ -18,14 +18,19 @@
                 },
                 pong: function(time) {
                     var elapsed = new Date().getTime() - time;
-                    console.log("Pong received! " + elapsed);
+                    alert("Pong received! Round-trip took: " + elapsed + "ms");
                 }
             }
         });
-        communicator.send('ping', new Date().getTime());
+
+        function ping() {
+            communicator.send('ping', new Date().getTime());
+        }
     </script>
 </head>
 <body>
 Hello World!
+<br/><br/>
+<button id="pingButton" onclick="ping();">Ping</button>
 </body>
 </html>

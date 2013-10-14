@@ -49,9 +49,13 @@ public class AJAXConnection implements Connection {
         @Override
         public void onResponseReceived(Request request, Response response) {
             if (response.getStatusCode() == 200) {
-                GWTCommunicator.log("Response received from send! " + response.getText());
-                sendRequest = null;
-                sendData();                         // Send more data if there is more to send to the server
+                AJAXResponse r = (AJAXResponse)JSONConverter.fromString(response.getText());
+                if (r.status) {             // Successful, lets check the queue for more to send
+                    sendRequest = null;
+                    sendData();
+                } else {
+                    sendError("Status was failure: " + r.failure);
+                }
             } else {
                 sendError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
             }
@@ -102,7 +106,6 @@ public class AJAXConnection implements Connection {
             map.put("messages", messages);
 
             String json = JSONConverter.toJSONValue(map).toString();
-            GWTCommunicator.log("sending: [" + json + "]");
             try {
                 sendRequest = sendBuilder.sendRequest(json, sendCallback);
             } catch(RequestException exc) {

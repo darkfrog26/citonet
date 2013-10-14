@@ -71,8 +71,5 @@ class Connection(val id: String) extends Listenable with Logging {
     if (message.id != -1) {
       lastReceiveId.set(expectedId)
     }
-    if (message.event == "ping") {    // Support ping-pong
-      send("pong", message.data)
-    }
   }
 }

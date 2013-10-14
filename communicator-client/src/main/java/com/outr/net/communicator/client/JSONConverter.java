@@ -18,7 +18,9 @@ public class JSONConverter {
     }
 
     public static JSONValue toJSONValue(Object obj) {
-        if (obj instanceof List) {
+        if (obj == null) {
+            return JSONNull.getInstance();
+        } else if (obj instanceof List) {
             List<Object> list = (List<Object>)obj;
             JSONArray array = new JSONArray();
             int position = 0;

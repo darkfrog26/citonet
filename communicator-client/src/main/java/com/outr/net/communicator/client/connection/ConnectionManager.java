@@ -21,7 +21,7 @@ public class ConnectionManager {
         this.communicator = communicator;
         uuid = UUID.unique();
         queue = new MessageQueue();
-        queue.enqueueHighPriority("create");
+        queue.enqueueHighPriority("create", null);      // TODO: send special details
     }
 
     public boolean isConnected() {
@@ -34,7 +34,7 @@ public class ConnectionManager {
         }
         // TODO: support multiple connection types based on settings
         connection = new AJAXConnection(this, communicator.getAJAXURL());
-        queue.enqueueHighPriority("connect");
+        queue.enqueueHighPriority("connect", null);     // TODO: should we send anything extra here?
         connection.connect();
     }
 
@@ -51,10 +51,11 @@ public class ConnectionManager {
     /**
      * Reliably enqueues a message to be sent to the server.
      *
+     * @param event the name of the message event you are sending to the server.
      * @param value the data to send in the message.
      */
-    public void send(Object value) {
-        queue.enqueue(value);
+    public void send(String event, Object value) {
+        queue.enqueue(event, value);
         if (connection != null) {
             connection.messageReady();
         }

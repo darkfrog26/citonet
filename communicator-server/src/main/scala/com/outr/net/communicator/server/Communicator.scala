@@ -55,7 +55,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     // TODO: wait for content to be received or pull from queue
 
     // TODO: remove this
-    val response = List(Message(1, "Hello World"), Message(2, "Goodbye World"))
+    val response = List(Message(1, "test", "Hello World"), Message(2, "test", "Goodbye World"))
 
     val json = generate(response, specifyClassName = false)
     HttpResponse(StringContent(json, "application/json"))
@@ -86,7 +86,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
 
       val message = messages.head
       if (message.id == -1) {
-        message.data match {
+        message.event match {
           case "create" => create(id)
           case "connect" => connect(id)
         }

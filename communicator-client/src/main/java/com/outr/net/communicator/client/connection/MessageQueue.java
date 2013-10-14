@@ -15,18 +15,19 @@ public class MessageQueue {
     /**
      * Enqueues a message to be sent
      *
+     * @param event the event name for the message
      * @param value the value to be sent
      */
-    public void enqueue(Object value) {
-        queue.add(new Message(++incrementor, value));
+    public void enqueue(String event, Object value) {
+        queue.add(new Message(++incrementor, event, value));
     }
 
-    public void enqueueHighPriority(Object value) {
+    public void enqueueHighPriority(String event, Object value) {
         int index = 0;
         while (queue.size() > index && queue.get(index).id == -1) {
             index++;
         }
-        queue.add(index, new Message(-1, value));
+        queue.add(index, new Message(-1, event, value));
     }
 
     /**

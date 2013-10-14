@@ -96,6 +96,7 @@ public class AJAXConnection implements Connection {
             map.put("messages", messages);
 
             String json = JSONConverter.toJSONValue(map).toString();
+            GWTCommunicator.log("sending: [" + json + "]");
             try {
                 sendRequest = sendBuilder.sendRequest(json, sendCallback);
             } catch(RequestException exc) {

@@ -76,8 +76,12 @@ object ServletConversion {
           try {
             output.write(content.value.getBytes(Charset.forName("UTF-8")))
           } finally {
-            output.flush()
-            output.close()
+            try {
+              output.flush()
+              output.close()
+            } catch {
+              case t: Throwable => // Ignore issues trying to flush
+            }
           }
         }
       }

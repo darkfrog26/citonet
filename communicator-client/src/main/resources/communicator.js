@@ -19,10 +19,24 @@ Communicator.prototype.init = function() {
 
 Communicator.prototype.connect = function(settings) {
     console.log('Connect!');
-    var f = function() {
+    var delayed = function() {
         GWTCommunicator.connect(settings);
     };
-    this.exec(f);
+    this.exec(delayed);
+};
+
+Communicator.prototype.on = function(event, f) {
+    var delayed = function() {
+        GWTCommunicator.on(event, f);
+    };
+    this.exec(delayed);
+};
+
+Communicator.prototype.send = function(event, data) {
+    var delayed = function() {
+        GWTCommunicator.send(event, data);
+    };
+    this.exec(delayed);
 };
 
 Communicator.prototype.exec = function(f) {

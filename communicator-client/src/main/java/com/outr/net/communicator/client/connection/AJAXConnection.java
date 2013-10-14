@@ -24,11 +24,17 @@ public class AJAXConnection implements Connection {
         public void onResponseReceived(Request request, Response response) {
             if (response.getStatusCode() == 200) {
                 pollRequest = null;
-                // TODO: process data incoming
-                GWTCommunicator.log("Received (" + response.getStatusCode() + "): " + response.getText());
-                ArrayList<Map<String, Object>> data = (ArrayList<Map<String, Object>>)JSONConverter.fromString(response.getText());
-                GWTCommunicator.log("Converted: " + data.size() + ", " + data.get(0).get("data"));
-                // TODO: reconnect after validating proper response
+//                GWTCommunicator.log("Received: " + response.getText());
+                AJAXResponse r = (AJAXResponse)JSONConverter.fromString(response.getText());
+                if (r.status) {
+                    for (int i = 0; i < r.data.size(); i++) {
+                        manager.received(r.data.get(i));
+                    }
+
+                    connectPolling();           // Reconnect polling
+                } else {
+                    pollError("Status was failure: " + r.failure);
+                }
             } else {
                 pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
             }

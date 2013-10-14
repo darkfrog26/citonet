@@ -40,8 +40,11 @@ class OUTRNetServlet extends HttpServlet with Logging {
       val gzip = request.headers.gzipSupport
       ServletConversion.convert(response, servletResponse, gzip)
     } catch {
+      case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {
+        warn(s"End of File exception occurred for: ${request.url}", t)
+      }
       case t: Throwable => {
-        error(s"Error occurred on ${request.url}.", t)
+        error(s"Error occurred on ${request.url} - ${t.getClass.getName}.", t)
         throw t
       }
     }

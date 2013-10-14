@@ -18,6 +18,14 @@ case class URL(protocol: Protocol = Protocol.Http,
 
   lazy val baseAndPath = s"$base$path"
 
+  lazy val filename = path.substring(path.lastIndexOf('/') + 1)
+
+  lazy val extension = if (filename.indexOf('.') != -1) {
+    filename.substring(filename.lastIndexOf('.') + 1).toString
+  } else {
+    null
+  }
+
   lazy val javaURL = new net.URL(toString)
 
   /**

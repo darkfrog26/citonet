@@ -1,6 +1,7 @@
 package com.outr.net.http.content
 
 import com.outr.net.URL
+import com.outr.net.http.mime.MimeType
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -15,7 +16,7 @@ case class URLContent(url: URL,
   lazy val contentType = if (contentTypeOverride != null) {
     contentTypeOverride
   } else {
-    connection.getContentType
+    MimeType.lookup(url.extension, connection.getContentType)
   }
 
   lazy val contentLength = connection.getContentLengthLong

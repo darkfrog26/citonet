@@ -1,5 +1,6 @@
 package com.outr.net.communicator.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.json.client.*;
 
 import java.util.ArrayList;
@@ -20,7 +21,16 @@ public class JSONConverter {
     public static JSONValue toJSONValue(Object obj) {
         if (obj == null) {
             return JSONNull.getInstance();
-        } else if (obj instanceof List) {
+        }
+
+        // Check for support before built-in
+        for (JSONSupport support : supportList) {
+            JSONValue value = support.toJSON(obj);
+            if (value != null) {
+                return value;
+            }
+        }
+        if (obj instanceof List) {
             List<Object> list = (List<Object>)obj;
             JSONArray array = new JSONArray();
             int position = 0;
@@ -45,12 +55,6 @@ public class JSONConverter {
         } else if (obj instanceof Boolean) {
             return JSONBoolean.getInstance((Boolean)obj);
         } else {
-            for (JSONSupport support : supportList) {
-                JSONValue value = support.toJSON(obj);
-                if (value != null) {
-                    return value;
-                }
-            }
             log("Unsupported object type during JSON conversion: " + obj.getClass());
             return JSONNull.getInstance();
         }
@@ -61,7 +65,32 @@ public class JSONConverter {
         return fromJSONValue(value);
     }
 
+    public static Object fromJavaScriptObject(JavaScriptObject obj) {
+        String type = typeOf(obj);
+        JSONValue value = null;
+        if ("array".equalsIgnoreCase(type)) {
+            value = new JSONArray(obj);
+        } else if ("undefined".equalsIgnoreCase(type)) {
+            value = JSONNull.getInstance();
+        } else if ("number".equalsIgnoreCase(type)) {
+            value = new JSONNumber(toNumber(obj));
+        } else {
+            log("Unknown type for conversion: " + obj + " (" + type + ")");
+        }
+        return fromJSONValue(value);
+    }
+
     public static Object fromJSONValue(JSONValue value) {
+        if (value.isNull() != null) {
+            return null;
+        }
+        // Check for JSONSupport first!
+        for (JSONSupport support : supportList) {
+            Object obj = support.fromJSON(value);
+            if (obj != null) {
+                return obj;
+            }
+        }
         if (value instanceof JSONArray) {
             JSONArray array = value.isArray();
             List<Object> list = new ArrayList<Object>(array.size());
@@ -85,9 +114,17 @@ public class JSONConverter {
             return value.isBoolean().booleanValue();
         } else {
             log("Unsupported object type during conversion from JSON: " + value.getClass());
-            return JSONNull.getInstance();
+            return null;
         }
     }
+
+    public static native String typeOf(JavaScriptObject obj) /*-{
+        return typeof obj;
+    }-*/;
+
+    public static native double toNumber(JavaScriptObject obj) /*-{
+        return obj;
+    }-*/;
 
     private static native void log(String message) /*-{
         console.log(message);

@@ -14,7 +14,14 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders {
     case None => false
   }
 
-  def date(key: String) = values.get(key).map(HttpApplication.DateParser.parse).map(d => d.getTime)
+  def date(key: String) = {
+    val value = values.get("key")
+    try {
+      value.map(HttpApplication.DateParser.parse).map(d => d.getTime)
+    } catch {
+      case exc: NumberFormatException => throw new RuntimeException(s"Unable to parse date from ($key): [$value]", exc)
+    }
+  }
 }
 
 object HttpRequestHeaders {

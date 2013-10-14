@@ -63,12 +63,13 @@ public class ConnectionManager {
 
     public void received(Message message) {
         int expectedId = lastReceiveId + 1;
-        if (message.id != expectedId) {
+        if (message.id != -1 && message.id != expectedId) {
             GWTCommunicator.log("Receive id is incorrect! Last Receive ID: " + lastReceiveId + ", Message Id: " + message.id + ", Expected: " + expectedId + ", Ignoring message and re-requesting!");
             return;
         }
-        GWTCommunicator.log("Received: " + message.id + ", " + message.data);
-        // TODO: fire received event
-        lastReceiveId = expectedId;
+        communicator.received.fire(message);
+        if (message.id != -1) {     // Only increment if it's not a high priority message
+            lastReceiveId = expectedId;
+        }
     }
 }

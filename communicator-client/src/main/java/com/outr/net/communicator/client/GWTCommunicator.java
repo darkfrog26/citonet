@@ -4,10 +4,12 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.json.client.JSONObject;
-import com.outr.net.communicator.client.connection.AJAXResponseConverter;
+import com.google.gwt.user.client.Timer;
 import com.outr.net.communicator.client.connection.ConnectionManager;
 import com.outr.net.communicator.client.connection.Message;
-import com.outr.net.communicator.client.connection.MessageConverter;
+import com.outr.net.communicator.client.connection.convert.AJAXResponseConverter;
+import com.outr.net.communicator.client.connection.convert.MessageConverter;
+import com.outr.net.communicator.client.connection.convert.MessageReceiveFailureConverter;
 import com.outr.net.communicator.client.event.Listenable;
 import com.outr.net.communicator.client.event.Listener;
 
@@ -23,31 +25,53 @@ public class GWTCommunicator implements EntryPoint {
     public final ErrorDialog error;
 
     public final Listenable<Message> received = new Listenable<Message>();
+    private final Timer updater;
 
     static {
-        JSONConverter.add(new MessageConverter());      // Add support to convert Messages to/from JSON
-        JSONConverter.add(new AJAXResponseConverter()); // Add support to convert AJAXResponses to/from JSON
+        JSONConverter.add(new MessageConverter());
+        JSONConverter.add(new AJAXResponseConverter());
+        JSONConverter.add(new MessageReceiveFailureConverter());
     }
 
     public String getAJAXURL() {
         return setting("ajaxURL", "/Communicator/connect.html");
     }
 
+    public int reconnectDelay() {
+        return setting("reconnectDelay", 10000);
+    }
+
     public GWTCommunicator() {
         connectionManager = new ConnectionManager(this);
         error = new ErrorDialog(this);
+        updater = new Timer() {
+            private long previous = System.currentTimeMillis();
+
+            public void run() {
+                long current = System.currentTimeMillis();
+                int delta = (int)(current - previous);
+                previous = current;
+                update(delta);
+            }
+        };
     }
 
     @Override
     public void onModuleLoad() {
         initialize();
         error.init();
+        updater.scheduleRepeating(250);
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
                 notifyHostPage();
             }
         });
+    }
+
+    public void update(int delta) {
+        connectionManager.update(delta);
+        error.update(delta);
     }
 
     public <T> T setting(String name, T def) {
@@ -91,8 +115,18 @@ public class GWTCommunicator implements EntryPoint {
         connectionManager.send(event, obj);
     }
 
+    public void reload() {
+        error.show("Reloading Page", "The page will now be reloaded. If the browser doesn't reload on it's own please press the reload button in your browser.");
+        updater.cancel();       // Stop the timer so nothing else happens while we work
+        reloadBrowser(true);
+    }
+
     public static native void log(String message) /*-{
         $wnd.console.log(message);
+    }-*/;
+
+    public static native void reloadBrowser(boolean force) /*-{
+        $wnd.location.reload(force)
     }-*/;
 
     private native void initialize() /*-{

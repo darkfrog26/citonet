@@ -49,6 +49,9 @@ public class ErrorDialog {
         div.removeClass("outrnet_error_hidden");
     }
 
+    public void update(int delta) {
+    }
+
     public void update(String title, String text) {
         message.html("<h2>" + title + "</h2><p>" + text + "</p>");
     }

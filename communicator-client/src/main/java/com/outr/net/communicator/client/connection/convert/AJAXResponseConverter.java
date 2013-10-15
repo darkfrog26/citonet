@@ -1,10 +1,13 @@
-package com.outr.net.communicator.client.connection;
+package com.outr.net.communicator.client.connection.convert;
 
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.outr.net.communicator.client.JSONConverter;
 import com.outr.net.communicator.client.JSONSupport;
+import com.outr.net.communicator.client.connection.AJAXResponse;
+import com.outr.net.communicator.client.connection.Message;
+import com.outr.net.communicator.client.connection.MessageReceiveFailure;
 
 import java.util.List;
 
@@ -33,7 +36,7 @@ public class AJAXResponseConverter implements JSONSupport {
             if (obj.size() == 3 && obj.containsKey("status") && obj.containsKey("data") && obj.containsKey("failure")) {
                 boolean status = obj.get("status").isBoolean().booleanValue();
                 List<Message> data = (List<Message>)JSONConverter.fromJSONValue(obj.get("data"));
-                Object failure = JSONConverter.fromJSONValue(obj.get("failure"));
+                MessageReceiveFailure failure = (MessageReceiveFailure)JSONConverter.fromJSONValue(obj.get("failure"));
                 return new AJAXResponse(status, data, failure);
             }
         }

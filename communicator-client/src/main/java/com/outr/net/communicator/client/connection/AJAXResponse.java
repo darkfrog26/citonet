@@ -8,9 +8,9 @@ import java.util.List;
 public class AJAXResponse {
     public final boolean status;
     public final List<Message> data;
-    public final Object failure;
+    public final MessageReceiveFailure failure;
 
-    public AJAXResponse(boolean status, List<Message> data, Object failure) {
+    public AJAXResponse(boolean status, List<Message> data, MessageReceiveFailure failure) {
         this.status = status;
         this.data = data;
         this.failure = failure;

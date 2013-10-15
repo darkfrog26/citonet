@@ -1,4 +1,4 @@
-package com.outr.net.communicator.client.connection;
+package com.outr.net.communicator.client.connection.convert;
 
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
@@ -6,6 +6,7 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.outr.net.communicator.client.JSONConverter;
 import com.outr.net.communicator.client.JSONSupport;
+import com.outr.net.communicator.client.connection.Message;
 
 /**
  * @author Matt Hicks <matt@outr.com>

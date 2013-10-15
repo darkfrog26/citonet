@@ -28,9 +28,9 @@ object Communicator extends HttpHandler with Logging with Listenable {
    * Amount of time to wait during polling for a connection to exist since connections are created by the "send" aspect
    * there may be a certain amount of time between polling connects and the connection is created by "send".
    *
-   * Defaults to 10 seconds
+   * Defaults to 5 seconds
    */
-  val waitForConnectionTime = Property[Double](default = Some(10.seconds))
+  val waitForConnectionTime = Property[Double](default = Some(5.seconds))
   /**
    * Amount of time for polling to wait for messages to appear in the queue before returning an empty response.
    *
@@ -65,7 +65,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
       }
     } catch {
       case exc: MessageException => {
-        exc.printStackTrace()
+        warn(s"MessageException: ${exc.getMessage}")
 
         generate(Response(status = false, failure = exc.failure), specifyClassName = false)
       }

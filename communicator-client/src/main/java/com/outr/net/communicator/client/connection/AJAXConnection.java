@@ -33,16 +33,16 @@ public class AJAXConnection implements Connection {
 
                     connectPolling();           // Reconnect polling
                 } else {
-                    pollError("Status was failure: " + r.failure);
+                    pollError("Status was failure: " + r.failure, r);
                 }
             } else {
-                pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
+                pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")", null);
             }
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
-            pollError(exception.getMessage());
+            pollError(exception.getMessage(), null);
         }
     };
     private RequestCallback sendCallback = new RequestCallback() {
@@ -52,18 +52,19 @@ public class AJAXConnection implements Connection {
                 AJAXResponse r = (AJAXResponse)JSONConverter.fromString(response.getText());
                 if (r.status) {             // Successful, lets check the queue for more to send
                     sendRequest = null;
+                    manager.queue.confirm();    // Messages sent successfully
                     sendData();
                 } else {
-                    sendError("Status was failure: " + r.failure);
+                    sendError("Status was failure: " + r.failure, r);
                 }
             } else {
-                sendError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")");
+                sendError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")", null);
             }
         }
 
         @Override
         public void onError(Request request, Throwable exception) {
-            sendError(exception.getMessage());
+            sendError(exception.getMessage(), null);
         }
     };
 
@@ -90,7 +91,7 @@ public class AJAXConnection implements Connection {
         try {
             pollRequest = pollBuilder.sendRequest(json, pollCallback);
         } catch(RequestException exc) {
-            GWTCommunicator.log("PollingRequestError: " + exc.getMessage());
+            log("PollingRequestError: " + exc.getMessage());
         }
     }
 
@@ -109,7 +110,7 @@ public class AJAXConnection implements Connection {
             try {
                 sendRequest = sendBuilder.sendRequest(json, sendCallback);
             } catch(RequestException exc) {
-                GWTCommunicator.log("SendRequestError: " + exc.getMessage());
+                log("SendRequestError: " + exc.getMessage());
             }
         }
     }
@@ -119,16 +120,29 @@ public class AJAXConnection implements Connection {
         sendData();
     }
 
-    private void pollError(String error) {
-        GWTCommunicator.log("Error received from poll: " + error);
-        // TODO: log error polling
-        // TODO: delayed retry
+    private void pollError(String error, AJAXResponse response) {
+        log("Error received from poll: " + error);
+        manager.disconnected();
+        responseError(response);
     }
 
-    private void sendError(String error) {
-        GWTCommunicator.log("Error received from send: " + error);
-        // TODO: add sentQueue back to sendQueue
-        // TODO: log error sending
-        // TODO: delayed retry
+    private void sendError(String error, AJAXResponse response) {
+        log("Error received from send: " + error);
+        manager.queue.failed();
+        manager.disconnected();
+        responseError(response);
+    }
+
+    private void responseError(AJAXResponse response) {
+        if (response != null && response.failure != null) {
+            manager.handleError(response.failure.error);
+        }
+    }
+
+    public void update(int delta) {
+    }
+
+    private void log(String message) {
+        GWTCommunicator.log(message);
     }
 }

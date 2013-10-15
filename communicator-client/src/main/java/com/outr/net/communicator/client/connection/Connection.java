@@ -11,4 +11,6 @@ public interface Connection {
      * sending.
      */
     public void messageReady();
+
+    public void update(int delta);
 }

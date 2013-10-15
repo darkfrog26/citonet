@@ -17,6 +17,8 @@ public class ConnectionManager {
     private boolean connected;
     private int lastReceiveId;
 
+    private int reconnectInMilliseconds = -1;
+
     public ConnectionManager(GWTCommunicator communicator) {
         this.communicator = communicator;
         uuid = UUID.unique();
@@ -34,14 +36,50 @@ public class ConnectionManager {
         }
         // TODO: support multiple connection types based on settings
         connection = new AJAXConnection(this, communicator.getAJAXURL());
+        reconnect();
+    }
+
+    public void update(int delta) {
+        if (connection != null) {
+            connection.update(delta);
+        }
+        if (reconnectInMilliseconds != -1) {        // Reconnect timer activated
+            reconnectInMilliseconds -= delta;
+            updateDisconnectMessage(false);
+            if (reconnectInMilliseconds <= 0) {
+                reconnect();                        // Reconnect when the timer runs out
+            }
+        }
+    }
+
+    public void reconnect() {
+        reconnectInMilliseconds = -1;       // Remove reconnect timer
+        if (connection == null) {
+            throw new RuntimeException("Connection doesn't exist to reconnect with!");
+        }
         queue.enqueueHighPriority("connect", null);     // TODO: should we send anything extra here?
         connection.connect();
     }
 
     public void disconnected() {
-        connection = null;
+        boolean wasConnected = connected;
         connected = false;
-        // TODO: reconnect
+        if (reconnectInMilliseconds == -1) {
+//            log("Disconnected, attempting reconnect in " + communicator.reconnectDelay() + "milliseconds.");
+            reconnectInMilliseconds = communicator.reconnectDelay();
+            updateDisconnectMessage(wasConnected);
+        }
+    }
+
+    private void updateDisconnectMessage(boolean show) {
+        String title = "Disconnected from Server";
+        int seconds = (int)Math.round(reconnectInMilliseconds / 1000.0);
+        String text = "The connection to the server was lost. Will attempt to reconnect in " + seconds + " seconds.";
+        if (show) {
+            communicator.error.show(title, text);
+        } else {
+            communicator.error.update(title, text);
+        }
     }
 
     public int getLastReceiveId() {
@@ -64,12 +102,26 @@ public class ConnectionManager {
     public void received(Message message) {
         int expectedId = lastReceiveId + 1;
         if (message.id != -1 && message.id != expectedId) {
-            GWTCommunicator.log("Receive id is incorrect! Last Receive ID: " + lastReceiveId + ", Message Id: " + message.id + ", Expected: " + expectedId + ", Ignoring message and re-requesting!");
+            log("Receive id is incorrect! Last Receive ID: " + lastReceiveId + ", Message Id: " + message.id + ", Expected: " + expectedId + ", Ignoring message and re-requesting!");
             return;
         }
         communicator.received.fire(message);
         if (message.id != -1) {     // Only increment if it's not a high priority message
             lastReceiveId = expectedId;
+        } else if ("connected".equalsIgnoreCase(message.event)) {
+            connected = true;
         }
+    }
+
+    public void handleError(int errorCode) {
+        if (errorCode == MessageReceiveFailure.ConnectionNotFound) {
+            communicator.reload();
+        } else {
+            log("ConnectionManager.handleError: Unhandled error code: " + errorCode);
+        }
+    }
+
+    private void log(String message) {
+        GWTCommunicator.log(message);
     }
 }

@@ -1,7 +1,6 @@
 package com.outr.net.communicator.client.connection;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -54,18 +53,10 @@ public class MessageQueue {
     }
 
     /**
-     * Confirms receipt of all messages up to and including the supplied id.
-     *
-     * @param id the last id confirmed receipt that can be removed.
+     * Confirms receipt of all messages that were sent.
      */
-    public void confirm(int id) {
-        Iterator<Message> iterator = sent.iterator();
-        while (iterator.hasNext()) {
-            Message message = iterator.next();
-            if (message.id <= id) {
-                iterator.remove();
-            }
-        }
+    public void confirm() {
+        sent.clear();
     }
 
     /**

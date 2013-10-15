@@ -83,17 +83,21 @@ public class GWTCommunicator implements EntryPoint {
         }
     }
 
-    public void connect(JavaScriptObject json) {
+    public boolean connect(JavaScriptObject json) {
         try {
+            if (connectionManager.hasConnection()) {
+                return false;
+            }
             settings = (Map<String, Object>)JSONConverter.fromJSONValue(new JSONObject(json));
             for (Map.Entry<String, JavaScriptObject> entry : setting("on", new HashMap<String, JavaScriptObject>()).entrySet()) {
                 on(entry.getKey(), get(json, "on." + entry.getKey()));
             }
-            // TODO: handle connection already exists
 
             connectionManager.connect();
+            return true;
         } catch(Throwable t) {
             log("Exception thrown: " + t.getMessage());
+            return false;
         }
     }
 

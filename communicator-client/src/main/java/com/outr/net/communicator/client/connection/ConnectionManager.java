@@ -26,6 +26,10 @@ public class ConnectionManager {
         queue.enqueueHighPriority("create", null);      // TODO: send special details
     }
 
+    public boolean hasConnection() {
+        return connection != null;
+    }
+
     public boolean isConnected() {
         return connection != null && connected;
     }

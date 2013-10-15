@@ -14,6 +14,7 @@ object ExampleWebApplication extends WebApplication with Logging {
 
   def init() = {
     addClassPath("/", "html/")
+    addContent("/communicator.css", URLContent(getClass.getClassLoader.getResource("communicator.css")))
     addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))
     addClassPath("/GWTCommunicator/", "GWTCommunicator/")
     addHandler("/Communicator/connect.html", Communicator)

@@ -20,6 +20,7 @@ import java.util.Map;
 public class GWTCommunicator implements EntryPoint {
     private Map<String, Object> settings;
     private final ConnectionManager connectionManager;
+    public final ErrorDialog error;
 
     public final Listenable<Message> received = new Listenable<Message>();
 
@@ -34,11 +35,13 @@ public class GWTCommunicator implements EntryPoint {
 
     public GWTCommunicator() {
         connectionManager = new ConnectionManager(this);
+        error = new ErrorDialog(this);
     }
 
     @Override
     public void onModuleLoad() {
         initialize();
+        error.init();
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {

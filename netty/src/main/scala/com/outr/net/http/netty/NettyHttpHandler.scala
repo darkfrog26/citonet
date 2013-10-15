@@ -36,12 +36,12 @@ object NettyHttpHandler {
 
   def requestConverter(r: NettyHttpRequest) = {
     val url = urlExtractor(r)
+    val method = Method(r.getMethod.name())
     val headers = r.headers().map(entry => entry.getKey -> entry.getValue).toMap
-    HttpRequest(url, HttpRequestHeaders(headers))
+    HttpRequest(url, method, HttpRequestHeaders(headers))
   }
 
   def urlExtractor(r: NettyHttpRequest) = {
-    val method = Method(r.getMethod.name())
     val decoder = new QueryStringDecoder(r.getUri)
     val hostAndPort = HttpHeaders.getHost(r)
     val (host, port) = hostAndPort match {
@@ -50,7 +50,7 @@ object NettyHttpHandler {
     val parameters = decoder.parameters().map {
       case (key, values) => key -> values.toList
     }.toMap
-    URL(method, Protocol.Http, host, port, decoder.path(), HttpParameters(parameters))
+    URL(Protocol.Http, host, port, decoder.path(), HttpParameters(parameters))
   }
 
   def statusConverter(status: HttpResponseStatus) = {

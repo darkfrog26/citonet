@@ -128,8 +128,9 @@ object ProxyConnection {
     val requestLine = headers.head
     val hostLine = headers.find(s => s.startsWith("Host:")).getOrElse(throw new NullPointerException(s"Unable to find Host for [$data]"))
     val (method, path, parameters) = readRequestLine(requestLine)
+    // TODO: leverage method
     val (host, port) = readHostLine(hostLine)
-    URL(method, protocol, host, port, path, HttpParameters(parameters), hash = null)
+    URL(protocol, host, port, path, HttpParameters(parameters), hash = null)
   }
 
   private def readRequestLine(line: String) = line match {

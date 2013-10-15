@@ -1,1 +1,1 @@
-// TODO: provide instructions to set up communication
+See "examples" project for details on setup.

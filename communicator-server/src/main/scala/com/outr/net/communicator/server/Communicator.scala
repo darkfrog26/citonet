@@ -13,7 +13,7 @@ import org.powerscala.event.processor.UnitProcessor
 import scala.annotation.tailrec
 import org.powerscala.event.Listenable
 import org.powerscala.concurrent.Time._
-import org.powerscala.concurrent.Time
+import org.powerscala.concurrent.{Executor, Time}
 import org.powerscala.property.Property
 
 /**
@@ -37,11 +37,22 @@ object Communicator extends HttpHandler with Logging with Listenable {
    * Defaults to 10 seconds
    */
   val waitForDataTime = Property[Double](default = Some(10.seconds))
+  /**
+   * Amount of time a connection will remain active before being disposed after the last communication is received from
+   * the client.
+   *
+   * Defaults to 30 seconds.
+   */
+  val connectionTimeout = Property[Double](default = Some(30.seconds))
 
   val created = new UnitProcessor[Connection]("created")
   val connected = new UnitProcessor[Connection]("connected")
   val disconnected = new UnitProcessor[Connection]("disconnected")
   val disposed = new UnitProcessor[Connection]("disposed")
+
+  Executor.scheduleWithFixedDelay(1.0, 5.0) {
+    update()
+  }
 
   def onReceive(request: HttpRequest) = {
     val data = request.content match {
@@ -81,6 +92,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     }
     val connection = connections.getOrElse(id, throw new MessageException(s"Unable to find connection for receive by id: $id", MessageReceiveFailure.ConnectionNotFound))
     Time.waitFor(waitForDataTime()) {          // Wait for a message to be ready to send to the client
+      connection.heardFrom()                   // Keep updating the heard from during wait time so the connection doesn't timeout
       connection.hasMessage
     }
 
@@ -141,6 +153,21 @@ object Communicator extends HttpHandler with Logging with Listenable {
       }
       case None => throw new MessageException(s"Connection not found for $id during connect!", MessageReceiveFailure.ConnectionNotFound)
     }
+  }
+
+  private def update() = {    // Called on scheduler
+    val current = System.currentTimeMillis()
+    connections.foreach {
+      case (id, connection) => connection.update(current)
+    }
+  }
+
+  def dispose(connection: Connection) = synchronized {    // Disposes a connection and removes it from use
+    disconnected.fire(connection)   // TODO: only do this for AJAX
+    disposed.fire(connection)
+    connection.dispose()
+    connections -= connection.id
+    info(s"Connection ${connection.id} disposed! ${connections.size} connections still active.")
   }
 }
 

@@ -16,9 +16,13 @@ object MimeType {
     map += extension.toLowerCase -> mimeType.toLowerCase
   }
 
-  def lookup(extension: String, default: String) = map.get(extension.toLowerCase) match {
-    case Some(m) => m
-    case None => default
+  def lookup(extension: String, default: String) = if (extension != null) {
+    map.get(extension.toLowerCase) match {
+      case Some(m) => m
+      case None => default
+    }
+  } else {
+    default
   }
 
   // Load mime types from file

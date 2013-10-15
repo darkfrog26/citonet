@@ -11,6 +11,7 @@ import org.powerscala.concurrent.AtomicInt
 class Connection(val id: String) extends Listenable with Logging {
   private val lastReceiveId = new AtomicInt(0)
   private val lastSentId = new AtomicInt(0)
+  private var lastHeard = System.currentTimeMillis()
 
   val received = new UnitProcessor[Message]("received")
   val sent = new UnitProcessor[Message]("sent")
@@ -62,6 +63,7 @@ class Connection(val id: String) extends Listenable with Logging {
    * @throws MessageException if the message id is not in the correct order
    */
   def receive(message: Message) = synchronized {
+    heardFrom()             // Update the lastHeardFrom upon receipt of any message from client
     val expectedId = lastReceiveId.get() + 1
     if (message.id != -1 && message.id != expectedId) {
       val text = s"Invalid message id received on server: ${message.id}, but expected: $expectedId"
@@ -72,4 +74,17 @@ class Connection(val id: String) extends Listenable with Logging {
       lastReceiveId.set(expectedId)
     }
   }
+
+  def update(time: Long) = {
+    val delta = (time - lastHeardFrom) / 1000.0
+    if (delta > Communicator.connectionTimeout()) {
+      Communicator.dispose(this)
+    }
+  }
+
+  def dispose() = {
+  }
+
+  def lastHeardFrom = lastHeard
+  def heardFrom() = lastHeard = System.currentTimeMillis()
 }

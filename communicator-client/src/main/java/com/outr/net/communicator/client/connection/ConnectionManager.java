@@ -23,7 +23,7 @@ public class ConnectionManager {
         this.communicator = communicator;
         uuid = UUID.unique();
         queue = new MessageQueue();
-        queue.enqueueHighPriority("create", null);      // TODO: send special details
+        queue.enqueueHighPriority("create", null);
     }
 
     public boolean hasConnection() {
@@ -61,7 +61,7 @@ public class ConnectionManager {
         if (connection == null) {
             throw new RuntimeException("Connection doesn't exist to reconnect with!");
         }
-        queue.enqueueHighPriority("connect", null);     // TODO: should we send anything extra here?
+        queue.enqueueHighPriority("connect", null);
         connection.connect();
     }
 

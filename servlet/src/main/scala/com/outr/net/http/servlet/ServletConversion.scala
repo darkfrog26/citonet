@@ -1,6 +1,6 @@
 package com.outr.net.http.servlet
 
-import com.outr.net.{Method, ArrayBufferPool, URL}
+import com.outr.net.{IP, Method, ArrayBufferPool, URL}
 import scala.collection.JavaConversions._
 import org.powerscala.IO
 import com.outr.net.http.response.HttpResponse
@@ -15,7 +15,7 @@ import java.nio.charset.Charset
 object ServletConversion {
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
-    val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]"))
+    val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr))
     val method = Method(servletRequest.getMethod)
     val headers = servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap
     val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
@@ -23,7 +23,10 @@ object ServletConversion {
     } else {
       None
     }
-    val request = HttpRequest(url, method, HttpRequestHeaders(headers), content = content)
+    val remoteAddress = IP(servletRequest.getRemoteAddr)
+    val remoteHost = servletRequest.getRemoteHost
+    val remotePort = servletRequest.getRemotePort
+    val request = HttpRequest(url, method, HttpRequestHeaders(headers), content = content, remoteAddress = remoteAddress, remoteHost = remoteHost, remotePort = remotePort)
     request
   }
 

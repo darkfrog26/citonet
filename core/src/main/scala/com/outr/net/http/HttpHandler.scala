@@ -21,8 +21,8 @@ object HttpHandler {
   val Higher = 10.0
   val Highest = Double.MaxValue
 
-  def apply(f: HttpRequest => HttpResponse, priority: Double = Normal) = new HttpHandler {
-    def priority = priority
+  def apply(f: HttpRequest => HttpResponse, handlerPriority: Double = Normal) = new HttpHandler {
+    def priority = handlerPriority
 
     def onReceive(request: HttpRequest, response: HttpResponse) = response.merge(f(request))
   }

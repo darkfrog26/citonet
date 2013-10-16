@@ -1,6 +1,6 @@
 package com.outr.net.http.request
 
-import com.outr.net.{Method, URL}
+import com.outr.net.{IP, Method, URL}
 import com.outr.net.http.Cookie
 import com.outr.net.http.content.HttpContent
 
@@ -11,7 +11,10 @@ class HttpRequest(val url: URL,
                   val method: Method,
                   val headers: HttpRequestHeaders,
                   val cookies: Map[String, Cookie],
-                  val content: Option[HttpContent]) {
+                  val content: Option[HttpContent],
+                  val remoteAddress: IP,
+                  val remoteHost: String,
+                  val remotePort: Int) {
   def cookie(name: String) = cookies.get(name)
 
   override def toString = s"$url ($method)"
@@ -22,7 +25,10 @@ object HttpRequest {
             method: Method = Method.Get,
             headers: HttpRequestHeaders = HttpRequestHeaders.Empty,
             cookies: Map[String, Cookie] = null,
-            content: Option[HttpContent] = None): HttpRequest = {
+            content: Option[HttpContent] = None,
+            remoteAddress: IP = IP.LocalHost,
+            remoteHost: String = "localhost",
+            remotePort: Int = -1): HttpRequest = {
     val _cookies = if (cookies != null) {
       cookies
     } else {
@@ -31,7 +37,7 @@ object HttpRequest {
         case None => Map.empty[String, Cookie]
       }
     }
-    new HttpRequest(url, method, headers, _cookies, content)
+    new HttpRequest(url, method, headers, _cookies, content, remoteAddress, remoteHost, remotePort)
   }
 
   private def parseCookie(s: String) = {

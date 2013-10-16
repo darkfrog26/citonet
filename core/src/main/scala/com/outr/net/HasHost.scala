@@ -6,14 +6,11 @@ package com.outr.net
 trait HasHost {
   def host: String
 
-  lazy val ip: Option[(Int, Int, Int, Int)] = host match {
-    case URL.IpAddressRegex(a, b, c, d) => Some((a.toInt, b.toInt, c.toInt, d.toInt))
-    case _ => None
-  }
+  lazy val hostAsIP = IP.get(host)
 
-  lazy val isIp = ip.nonEmpty
+  lazy val isHostIp = hostAsIP.nonEmpty
 
-  lazy val domain = isIp match {
+  lazy val domain = isHostIp match {
     case true => host
     case false => {
       val parts = host.split('.')

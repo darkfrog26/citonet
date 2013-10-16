@@ -5,8 +5,9 @@ import java.io.{InputStream, OutputStream}
 import org.powerscala.concurrent.Executor
 import scala.annotation.tailrec
 import org.powerscala.log.Logging
-import com.outr.net.{ArrayBufferPool, Method, Protocol, URL}
+import com.outr.net._
 import com.outr.net.http.HttpParameters
+import scala.Some
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -31,7 +32,7 @@ class ProxyConnection(server: ProxyServer, socket: Socket, protocol: Protocol) e
       val data = new String(originBuffer, 0, len)
 
       // Assemble the URL
-      originURL = ProxyConnection.readURL(data, protocol)
+      originURL = ProxyConnection.readURL(data, protocol, socket.getLocalAddress.getHostAddress)
 
       // Request the proxy address from ProxyServer
       server.getMapping(originURL) match {
@@ -123,14 +124,14 @@ object ProxyConnection {
   private val RequestLineRegex = """([a-zA-Z]+) (.*) HTTP/1.1""".r
   private val HostLineRegex = """Host: (.+?):?(\d*)""".r
 
-  def readURL(data: String, protocol: Protocol) = {
+  def readURL(data: String, protocol: Protocol, ip: String) = {
     val headers = data.split("\n").map(s => s.trim).toList
     val requestLine = headers.head
     val hostLine = headers.find(s => s.startsWith("Host:")).getOrElse(throw new NullPointerException(s"Unable to find Host for [$data]"))
     val (method, path, parameters) = readRequestLine(requestLine)
     // TODO: leverage method
     val (host, port) = readHostLine(hostLine)
-    URL(protocol, host, port, path, HttpParameters(parameters), hash = null)
+    URL(protocol, host, port, IP(ip), path, HttpParameters(parameters), hash = null)
   }
 
   private def readRequestLine(line: String) = line match {

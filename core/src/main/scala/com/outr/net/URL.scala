@@ -11,10 +11,19 @@ import com.outr.net.http.HttpParameters
 case class URL(protocol: Protocol = Protocol.Http,
                host: String = "localhost",
                port: Int = 80,
+               ip: IP = IP.LocalHost,
                path: String = "/",
                parameters: HttpParameters = HttpParameters.Empty,
-               hash: String = null) extends HasHostAndPort {
-  lazy val base = if (host != null) s"$protocol://$hostPort" else s"$protocol:"
+               hash: String = null) extends HasHostAndPort with HasIP {
+  lazy val base = if (protocol != null) {
+    if (host != null) {
+      s"$protocol://$hostPort"
+    } else {
+      s"$protocol:"
+    }
+  } else {
+    hostPort
+  }
 
   lazy val baseAndPath = s"$base$path"
 
@@ -53,7 +62,6 @@ case class URL(protocol: Protocol = Protocol.Http,
 }
 
 object URL {
-  val IpAddressRegex = """\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b""".r
   val URLParser = """(\p{Alpha}+://)([\p{Alnum}-.]*):?(\d*)(/.*?)?([?].*)?""".r
   val URLParser2 = """([a-zA-Z0-9:]+:)(/.+)([?].*)?""".r
   val URLParser3 = """([\p{Alnum}-.]*):?(\d*)(/.*?)?([?].*)?""".r

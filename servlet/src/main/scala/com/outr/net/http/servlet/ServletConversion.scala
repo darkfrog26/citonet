@@ -41,7 +41,7 @@ object ServletConversion {
         if (cookie.comment != null) servletCookie.setComment(cookie.comment)
         if (cookie.domain != null) servletCookie.setDomain(cookie.domain)
         servletCookie.setHttpOnly(cookie.httpOnly)
-        if (cookie.maxAge != Int.MinValue) servletCookie.setMaxAge(cookie.maxAge)
+        if (cookie.maxAge != Int.MinValue) servletCookie.setMaxAge(math.round(cookie.maxAge).toInt)
         if (cookie.path != null) servletCookie.setPath(cookie.path)
         servletCookie.setSecure(cookie.secure)
         servletCookie.setVersion(cookie.version)

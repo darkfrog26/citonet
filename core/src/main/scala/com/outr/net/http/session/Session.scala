@@ -11,16 +11,19 @@ import org.powerscala.event.processor.UnitProcessor
  * @author Matt Hicks <matt@outr.com>
  */
 trait Session extends Temporal with Listenable with Storage[Any, Any] {
+  def id: String
+
   /**
    * Fired when a session value changes in this session.
    */
   val changed = new UnitProcessor[SessionValueChange]("changed")
 
-  abstract override protected def set(key: Any, value: Option[Any]) = {
-    val original = get(key)
-    super.set(key, value)
-    changed.fire(SessionValueChange(key, original, value))
+  override protected def changed[T <: Any](key: Any, oldValue: Option[T], newValue: Option[T]) = {
+    super.changed(key, oldValue, newValue)
+    changed.fire(SessionValueChange(key, oldValue, newValue))
   }
+
+  override def checkIn(): Unit = super.checkIn()
 
   /**
    * The timeout for this session in seconds without any communication.
@@ -54,6 +57,7 @@ trait Session extends Temporal with Listenable with Storage[Any, Any] {
 
   def dispose() = {
     clear()
-    // TODO: remove from SessionApplication
+
+    SessionApplication[Session]().remove(id)
   }
 }

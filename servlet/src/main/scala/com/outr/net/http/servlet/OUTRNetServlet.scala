@@ -21,7 +21,13 @@ class OUTRNetServlet extends HttpServlet with Logging {
     val clazz: EnhancedClass = Class.forName(applicationClass)
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
     application = companion.asInstanceOf[HttpApplication]
-    application.init()
+    application.initialize()
+  }
+
+  override def destroy() = {
+    application.dispose()
+
+    super.destroy()
   }
 
   override def doGet(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {

@@ -43,4 +43,6 @@ object ExampleWebApplication extends WebApplication with Logging {
       }
     }
   }
+
+  def dispose() = {}
 }

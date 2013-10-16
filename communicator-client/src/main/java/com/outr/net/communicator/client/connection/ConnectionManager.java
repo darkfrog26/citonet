@@ -18,6 +18,7 @@ public class ConnectionManager {
     private int lastReceiveId;
 
     private int reconnectInMilliseconds = -1;
+    private int failures = 0;
 
     public ConnectionManager(GWTCommunicator communicator) {
         this.communicator = communicator;
@@ -57,6 +58,7 @@ public class ConnectionManager {
     }
 
     public void reconnect() {
+        communicator.error.update("Reconnecting...", "Attempting to reconnect to the server.");
         reconnectInMilliseconds = -1;       // Remove reconnect timer
         if (connection == null) {
             throw new RuntimeException("Connection doesn't exist to reconnect with!");
@@ -69,6 +71,7 @@ public class ConnectionManager {
         boolean wasConnected = connected;
         connected = false;
         if (reconnectInMilliseconds == -1) {
+            failures++;
 //            log("Disconnected, attempting reconnect in " + communicator.reconnectDelay() + "milliseconds.");
             reconnectInMilliseconds = communicator.reconnectDelay();
             updateDisconnectMessage(wasConnected);
@@ -76,9 +79,16 @@ public class ConnectionManager {
     }
 
     private void updateDisconnectMessage(boolean show) {
-        String title = "Disconnected from Server";
         int seconds = (int)Math.round(reconnectInMilliseconds / 1000.0);
-        String text = "The connection to the server was lost. Will attempt to reconnect in " + seconds + " seconds.";
+        String title;
+        String text;
+        if (failures > 1) {
+            title = "Failed to Connect (" + (failures - 1) + ")";
+            text = "Connection to the server failed. This may be caused by the server being updated or an internet connectivity issue. Will try again to connect in " + seconds + " seconds.";
+        } else {
+            title = "Disconnected from Server";
+            text = "The connection to the server was lost. Will attempt to reconnect again in " + seconds + " seconds.";
+        }
         if (show) {
             communicator.error.show(title, text);
         } else {
@@ -114,6 +124,7 @@ public class ConnectionManager {
             lastReceiveId = expectedId;
         } else if ("connected".equalsIgnoreCase(message.event)) {
             connected = true;
+            failures = 0;
         }
     }
 

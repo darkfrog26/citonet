@@ -42,7 +42,6 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       val session = request.cookie(cookieName) match {      // Find the cookie for the session
         case Some(cookie) => {                // Cookie found
           val id = cookie.value
-          info(s"Cookie found: $cookieName with id: $id")
           sessions.get(id) match {
             case Some(s) => s
             case None => createSession(request, id)
@@ -50,12 +49,11 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
         }
         case None => {
           val id = Unique()
-          info(s"Cookie not found! $cookieName")
           createSession(request, id)
         }
       }
       sessions += session.id -> session
-      // TODO: do we need to set the domain?
+      stack("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
     }
   }

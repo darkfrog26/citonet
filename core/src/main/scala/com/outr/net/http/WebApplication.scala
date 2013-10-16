@@ -5,11 +5,12 @@ import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.content.HttpContent
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.StringContent
+import com.outr.net.http.session.{Session, SessionApplication}
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class WebApplication extends HttpApplication with HandlerApplication with NotFoundApplication {
+abstract class WebApplication[S <: Session] extends SessionApplication[S] with NotFoundApplication {
   def addContent(uri: String, creator: => HttpContent): HttpHandler = {
     addContent(uri, request => creator)
   }

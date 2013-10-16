@@ -5,12 +5,16 @@ import com.outr.net.http.WebApplication
 import com.outr.net.communicator.server.{PongResponder, Communicator}
 import com.outr.net.http.content.URLContent
 import org.powerscala.log.Logging
+import com.outr.net.http.session.MapSession
+import com.outr.net.http.request.HttpRequest
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ExampleWebApplication extends WebApplication with Logging {
+object ExampleWebApplication extends WebApplication[MapSession] with Logging {
   PongResponder.connect()     // Support ping-pong
+
+  protected def createSession(request: HttpRequest, id: String) = new MapSession(id)
 
   def init() = {
     addClassPath("/", "html/")

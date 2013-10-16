@@ -2,7 +2,7 @@ package com.outr.net.communicator.server
 
 import com.outr.net.http.HttpHandler
 import com.outr.net.http.request.HttpRequest
-import com.outr.net.http.response.HttpResponse
+import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 import com.outr.net.http.content.{InputStreamContent, StringContent}
 
 import org.powerscala.json._
@@ -23,6 +23,8 @@ import org.powerscala.property.Property
  */
 object Communicator extends HttpHandler with Logging with Listenable {
   private var connections = Map.empty[String, Connection]
+
+  def priority = HttpHandler.Normal
 
   /**
    * Amount of time to wait during polling for a connection to exist since connections are created by the "send" aspect
@@ -54,7 +56,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     update()
   }
 
-  def onReceive(request: HttpRequest) = {
+  def onReceive(request: HttpRequest, response: HttpResponse) = {
     val data = request.content match {
       case Some(content) => content match {
         case isc: InputStreamContent => JSON.parseFull(IO.copy(isc.input)).get.asInstanceOf[Map[String, Any]]
@@ -81,7 +83,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
         generate(Response(status = false, failure = exc.failure), specifyClassName = false)
       }
     }
-    HttpResponse(StringContent(json, "application/json"))
+    response.copy(content = StringContent(json, "application/json"), status = HttpResponseStatus.OK)
   }
 
   private def receive(request: HttpRequest, id: String, lastReceiveId: Int) = {

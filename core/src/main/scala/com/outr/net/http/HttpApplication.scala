@@ -4,7 +4,7 @@ import org.powerscala.property.{ListProperty, Property}
 import com.outr.net.HasHostAndPort
 import org.powerscala.event.Listenable
 import java.text.SimpleDateFormat
-import com.outr.net.http.response.HttpResponseStatus
+import com.outr.net.http.response.{HttpResponse, HttpResponseStatus}
 import com.outr.net.http.request.HttpRequest
 
 /**
@@ -13,14 +13,16 @@ import com.outr.net.http.request.HttpRequest
 trait HttpApplication extends Listenable with HttpHandler {
   val bindings = new Property[List[HasHostAndPort]](default = Some(Nil)) with ListProperty[HasHostAndPort]
 
+  def priority = HttpHandler.Normal
+
   def init(): Unit
 
-  protected def processRequest(request: HttpRequest) = {
-    onReceive(request)
+  protected def processRequest(request: HttpRequest, response: HttpResponse) = {
+    onReceive(request, response)
   }
 
   def receive(request: HttpRequest) = {
-    val response = processRequest(request)
+    val response = processRequest(request, HttpResponse(status = HttpResponseStatus.NotFound))
     val cached = request.headers.ifModifiedSince match {
       case Some(modified) if response.content.lastModified != -1 => modified >= response.content.lastModified
       case _ => false

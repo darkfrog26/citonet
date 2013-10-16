@@ -11,4 +11,20 @@ case class HttpResponse(content: HttpContent = null,
                         headers: HttpResponseHeaders = HttpResponseHeaders(),
                         cookies: Set[Cookie] = Set.empty) {
   def setCookie(cookie: Cookie) = copy(cookies = cookies + cookie)
+
+  /**
+   * Merges the contents of this response with the supplied response to create a new HttpResponse object. The supplied
+   * response takes priority if there is any overlap.
+   *
+   * @param response the response to merge
+   */
+  def merge(response: HttpResponse) = {
+    if (content != null && response.content != null) {
+      throw new RuntimeException("Cannot merge with two HttpContents!")
+    }
+    val status = response.status
+    val headers = this.headers.merge(response.headers)
+    val cookies = this.cookies ++ response.cookies
+    HttpResponse(response.content, status, headers, cookies)
+  }
 }

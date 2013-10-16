@@ -7,11 +7,23 @@ import com.outr.net.http.response.HttpResponse
  * @author Matt Hicks <matt@outr.com>
  */
 trait HttpHandler {
-  def onReceive(request: HttpRequest): HttpResponse
+  def priority: Double
+
+  def onReceive(request: HttpRequest, response: HttpResponse): HttpResponse
 }
 
 object HttpHandler {
-  def apply(f: HttpRequest => HttpResponse) = new HttpHandler {
-    def onReceive(request: HttpRequest) = f(request)
+  val Lowest = Double.MinValue
+  val Lower = 0.0
+  val Low = 0.5
+  val Normal = 1.0
+  val High = 2.0
+  val Higher = 10.0
+  val Highest = Double.MaxValue
+
+  def apply(f: HttpRequest => HttpResponse, priority: Double = Normal) = new HttpHandler {
+    def priority = priority
+
+    def onReceive(request: HttpRequest, response: HttpResponse) = response.merge(f(request))
   }
 }

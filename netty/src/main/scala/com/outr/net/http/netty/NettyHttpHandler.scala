@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.{HttpRequest => NettyHttpRequest, HttpHeaders
 import scala.collection.JavaConversions._
 import com.outr.net.http._
 import com.outr.net.{Protocol, URL, Method}
-import com.outr.net.http.response.HttpResponseStatus
+import com.outr.net.http.response.{HttpResponse, HttpResponseStatus}
 import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import com.outr.net.http.content.URLContent
 
@@ -17,7 +17,7 @@ class NettyHttpHandler(support: NettyHttpSupport) extends SimpleChannelInboundHa
   def channelRead0(ctx: ChannelHandlerContext, msg: AnyRef) = msg match {
     case nettyRequest: NettyHttpRequest => {
       val request = NettyHttpHandler.requestConverter(nettyRequest)
-      val response = support.application.onReceive(request)
+      val response = support.application.onReceive(request, HttpResponse(status = HttpResponseStatus.NotFound))
 //      val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, NettyHttpHandler.statusConverter(response.status))
 //      nettyResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, response.contentType)
       response.content match {

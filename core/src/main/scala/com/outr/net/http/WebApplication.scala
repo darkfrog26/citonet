@@ -1,16 +1,15 @@
 package com.outr.net.http
 
-import com.outr.net.http.filter._
+import com.outr.net.http.handler._
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.content.HttpContent
 import com.outr.net.http.response.HttpResponse
-import com.outr.net.http.filter.ClassLoadingLookupFilter
 import com.outr.net.http.content.StringContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class WebApplication extends HttpApplication with FilteredApplication with NotFoundApplication {
+abstract class WebApplication extends HttpApplication with HandlerApplication with NotFoundApplication {
   def addContent(uri: String, creator: => HttpContent): HttpHandler = {
     addContent(uri, request => creator)
   }
@@ -20,26 +19,26 @@ abstract class WebApplication extends HttpApplication with FilteredApplication w
   }
 
   def addHandler(uri: String, handler: HttpHandler): HttpHandler = {
-    PathMappingFilter.add(this, uri, handler)
+    PathMappingHandler.add(this, uri, handler)
     handler
   }
 
   def removeContent(uri: String) = {
-    PathMappingFilter.remove(this, uri)
+    PathMappingHandler.remove(this, uri)
   }
 
   def addClassPath(urlBasePath: String,
                    lookupPath: String,
                    allowCaching: Boolean = true,
-                   priority: Double = HttpFilter.Low) = {
-    addFilter(ClassLoadingLookupFilter(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
+                   priority: Double = HttpHandler.Low) = {
+    addHandler(ClassLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
   }
 
   def addFilePath(urlBasePath: String,
                    lookupPath: String,
                    allowCaching: Boolean = true,
-                   priority: Double = HttpFilter.Low) = {
-    addFilter(FileLoadingLookupFilter(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
+                   priority: Double = HttpHandler.Low) = {
+    addHandler(FileLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
   }
 
   protected def notFoundContent(request: HttpRequest) = {

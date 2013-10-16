@@ -5,4 +5,4 @@ import org.powerscala.MappedStorage
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class MapSession extends Session with MappedStorage[Any, Any]
+class MapSession extends MappedStorage[Any, Any] with Session

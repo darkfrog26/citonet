@@ -1,9 +1,7 @@
 package com.outr.net.examples
 
-import com.outr.net._
 import com.outr.net.http.WebApplication
 import com.outr.net.communicator.server.{PongResponder, Communicator}
-import com.outr.net.http.content.URLContent
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
@@ -17,15 +15,10 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
   protected def createSession(request: HttpRequest, id: String) = new MapSession(id)
 
   def init() = {
-    addClassPath("/", "html/")
-    addContent("/communicator.css", URLContent(getClass.getClassLoader.getResource("communicator.css")))
-    addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))
-    addClassPath("/GWTCommunicator/", "GWTCommunicator/")
-    addHandler("/Communicator/connect.html", Communicator)
+    Communicator.configure(this)
 
-    disposed.on {
-      case evt => Communicator.dispose()
-    }
+    // Add example html files
+    addClassPath("/", "html/")
 
     Communicator.created.on {
       case connection => {

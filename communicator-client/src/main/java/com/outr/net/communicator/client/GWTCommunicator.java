@@ -34,7 +34,7 @@ public class GWTCommunicator implements EntryPoint {
     }
 
     public String getAJAXURL() {
-        return setting("ajaxURL", "/Communicator/connect.html");
+        return setting("ajaxURL", "/Communicator/connection");
     }
 
     public int reconnectDelay() {

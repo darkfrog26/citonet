@@ -1,9 +1,9 @@
 package com.outr.net.communicator.server
 
-import com.outr.net.http.HttpHandler
+import com.outr.net.http.{WebApplication, HttpHandler}
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
-import com.outr.net.http.content.{InputStreamContent, StringContent}
+import com.outr.net.http.content.{URLContent, InputStreamContent, StringContent}
 
 import org.powerscala.json._
 import org.powerscala.IO
@@ -52,6 +52,19 @@ object Communicator extends HttpHandler with Logging with Listenable {
 
   private val updater = Executor.scheduleWithFixedDelay(1.0, 5.0) {
     update()
+  }
+
+  def configure(application: WebApplication[_]): Unit = {
+    // Add resources needed for Communicator
+    application.addContent("/communicator.css", URLContent(getClass.getClassLoader.getResource("communicator.css")))
+    application.addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))
+    application.addClassPath("/GWTCommunicator/", "GWTCommunicator/")
+    application.addHandler("/Communicator/connection", Communicator)
+
+    // Make sure disposal of Connections occurs properly
+    application.disposed.on {
+      case evt => dispose()
+    }
   }
 
   def onReceive(request: HttpRequest, response: HttpResponse) = {

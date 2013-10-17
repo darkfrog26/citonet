@@ -56,8 +56,24 @@ function communicatorReady() {
 }
 
 function loadJavaScript(filename) {
-    var script = document.createElement('script');
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('src', filename);
-    document.getElementsByTagName('head')[0].appendChild(script);
+    var loader = function() {
+        var script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', filename);
+        document.getElementsByTagName('body')[0].appendChild(script);
+    };
+
+    if (document.readyState == 'complete' || document.readyState == 'interactive') {        // Page loaded
+        loader();
+    } else {
+        var previous = window.onload;
+        var f = loader;
+        if (previous) {
+            f = function() {
+                previous();
+                loader();
+            }
+        }
+        window.onload = f;
+    }
 }

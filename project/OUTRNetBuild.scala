@@ -32,6 +32,7 @@ object OUTRNetBuild extends Build {
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
+    .settings(libraryDependencies ++= Seq(Dependencies.Specs2))
 
   // HTTP Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
@@ -68,4 +69,5 @@ object Dependencies {
   val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val GWTQuery = "com.googlecode.gwtquery" % "gwtquery" % "1.3.3" % "provided"
+  val Specs2 = "org.specs2" %% "specs2" % "2.2.3" % "test"
 }

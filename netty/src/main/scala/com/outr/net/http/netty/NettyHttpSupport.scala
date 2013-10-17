@@ -24,17 +24,18 @@ class NettyHttpSupport(val application: HttpApplication) {
     bootstrap.channel(classOf[NioServerSocketChannel])
     bootstrap.childHandler(new NettyHttpInitializer(this))
 
-    application.bindings().foreach(bind)    // Bind to existing hosts and ports
-    application.bindings.change.on {
-      case evt => {
-        evt.newValue.foreach {              // Add any new bindings
-          case hp => if (!evt.oldValue.contains(hp)) bind(hp)
-        }
-        evt.oldValue.foreach {              // Remove any old bindings
-          case hp => if (!evt.newValue.contains(hp)) unbind(hp)
-        }
-      }
-    }
+    // TODO: add port binding directly to NettyHttpSupport since it isn't applicable to all implementations
+//    application.bindings().foreach(bind)    // Bind to existing hosts and ports
+//    application.bindings.change.on {
+//      case evt => {
+//        evt.newValue.foreach {              // Add any new bindings
+//          case hp => if (!evt.oldValue.contains(hp)) bind(hp)
+//        }
+//        evt.oldValue.foreach {              // Remove any old bindings
+//          case hp => if (!evt.newValue.contains(hp)) unbind(hp)
+//        }
+//      }
+//    }
   }
 
   def bind(hostAndPort: HasHostAndPort) = synchronized {

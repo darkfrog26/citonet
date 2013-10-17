@@ -12,13 +12,15 @@ import com.outr.net.http.content.URLContent
 object Test extends HttpApplication {
   def init() = {}
 
+  def dispose() = {}
+
   def onReceive(request: HttpRequest, response: HttpResponse) = {
     println(s"URL: ${request.url.breakDown}, Headers: ${request.headers}")
     response.copy(content = URLContent(URL.lookupResource("test.html")))
   }
 
   def main(args: Array[String]): Unit = {
-    bindings += 8080
+//    bindings += 8080
     new NettyHttpSupport(this)
     println("Started...")
   }

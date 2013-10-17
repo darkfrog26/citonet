@@ -2,7 +2,7 @@ package com.outr.net.http.session
 
 import com.outr.net.http.{Cookie, HttpHandler, HttpApplication}
 import com.outr.net.http.request.HttpRequest
-import org.powerscala.Unique
+import org.powerscala.{Priority, Unique}
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.handler.HandlerApplication
 import org.powerscala.log.Logging
@@ -16,7 +16,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
 
   def session = stack[S]("session")
 
-  addHandler(new SessionCreateHandler)      // Add a handler to set the session (high priority)
+  handlers.add(new SessionCreateHandler, Priority.Critical)      // Add a handler to set the session (critical priority)
 
   protected def cookieName: String = getClass.getSimpleName
 
@@ -36,8 +36,6 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
   }
 
   class SessionCreateHandler extends HttpHandler {
-    def priority = HttpHandler.Highest    // Make sure the session appears early
-
     def onReceive(request: HttpRequest, response: HttpResponse) = SessionApplication.this.synchronized {
       val session = request.cookie(cookieName) match {      // Find the cookie for the session
         case Some(cookie) => {                // Cookie found
@@ -56,6 +54,12 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       stack("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
     }
+  }
+
+  override def dispose() = {
+    super.dispose()
+
+    sessions.values.foreach(s => s.dispose())
   }
 }
 

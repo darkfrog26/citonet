@@ -6,6 +6,7 @@ import com.outr.net.http.content.HttpContent
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.StringContent
 import com.outr.net.http.session.{Session, SessionApplication}
+import org.powerscala.Priority
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -31,15 +32,15 @@ abstract class WebApplication[S <: Session] extends SessionApplication[S] with N
   def addClassPath(urlBasePath: String,
                    lookupPath: String,
                    allowCaching: Boolean = true,
-                   priority: Double = HttpHandler.Low) = {
-    addHandler(ClassLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
+                   priority: Priority = Priority.Normal) = {
+    handlers.add(ClassLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching), priority)
   }
 
   def addFilePath(urlBasePath: String,
                    lookupPath: String,
                    allowCaching: Boolean = true,
-                   priority: Double = HttpHandler.Low) = {
-    addHandler(FileLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching, priority = priority))
+                   priority: Priority = Priority.Normal) = {
+    handlers.add(FileLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching), priority)
   }
 
   protected def notFoundContent(request: HttpRequest) = {

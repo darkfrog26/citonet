@@ -25,7 +25,13 @@ class OUTRNetServlet extends HttpServlet with Logging {
   }
 
   override def destroy() = {
-    application.dispose()
+    HttpApplication.stack.context(application) {
+      try {
+        application.dispose()
+      } catch {
+        case t: Throwable => error(s"Exception thrown while attempting to dispose application.", t)
+      }
+    }
 
     super.destroy()
   }

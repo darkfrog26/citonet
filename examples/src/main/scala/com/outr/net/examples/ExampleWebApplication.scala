@@ -23,6 +23,10 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
     addClassPath("/GWTCommunicator/", "GWTCommunicator/")
     addHandler("/Communicator/connect.html", Communicator)
 
+    disposed.on {
+      case evt => Communicator.dispose()
+    }
+
     Communicator.created.on {
       case connection => {
         info(s"Created! ${connection.id}")
@@ -48,5 +52,8 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
     }
   }
 
-  def dispose() = {}
+  override def dispose() = {
+    super.dispose()
+    info("Disposed application!")
+  }
 }

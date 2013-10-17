@@ -10,6 +10,7 @@ import scala.Some
 import org.powerscala.concurrent.{Time, Executor}
 import java.util.concurrent.ScheduledFuture
 import org.powerscala.concurrent.Time._
+import org.powerscala.event.processor.UnitProcessor
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -20,6 +21,8 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 
   @volatile private var _initialized = false
   @volatile private var _updater: ScheduledFuture[_] = _
+
+  val disposed = new UnitProcessor[HttpApplication]("disposed")
 
   def initialized = _initialized
 
@@ -35,14 +38,12 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    */
   def request = stack[HttpRequest]("request")
 
-  def priority = HttpHandler.Normal
-
   final def initialize() = synchronized {
     if (!initialized) {
       init()
 
       var previous = System.nanoTime()
-      Executor.scheduleWithFixedDelay(0.0, updateFrequency) {
+      _updater = Executor.scheduleWithFixedDelay(0.0, updateFrequency) {
         val current = System.nanoTime()
         val delta = Time.fromNanos(current - previous)
         update(delta)
@@ -66,7 +67,11 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
   /**
    * Called once when the application is terminating (not guaranteed to be executed).
    */
-  def dispose(): Unit
+  def dispose(): Unit = {
+    _updater.cancel(false)
+
+    disposed.fire(this)
+  }
 
   protected def processRequest(request: HttpRequest, response: HttpResponse) = {
     onReceive(request, response)
@@ -107,7 +112,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 object HttpApplication {
   val DateParser = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz")
 
-  private val stack = new LocalStack[HttpApplication]
+  val stack = new LocalStack[HttpApplication]
 
   def apply() = stack()
 }

@@ -11,8 +11,6 @@ import com.outr.net.http.response.HttpResponse
 private class PathMappingHandler extends HttpHandler {
   private var map = Map.empty[String, HttpHandler]
 
-  def priority = HttpHandler.High
-
   def onReceive(request: HttpRequest, response: HttpResponse) = map.get(request.url.path) match {
     case Some(handler) => handler.onReceive(request, response)
     case None => response
@@ -30,7 +28,14 @@ object PathMappingHandler {
     pmh.map -= path
   }
 
-  private def getHandler(application: HandlerApplication) = {
-    Storage.getOrSet(application, "pathMappingHandler", application.addHandler(new PathMappingHandler))
+  private def getHandler(application: HandlerApplication) = synchronized {
+    Storage.get[String, PathMappingHandler](application, "pathMappingHandler") match {
+      case Some(handler) => handler
+      case None => {
+        val handler = new PathMappingHandler
+        application.handlers.add(handler)
+        handler
+      }
+    }
   }
 }

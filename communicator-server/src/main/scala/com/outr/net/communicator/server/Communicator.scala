@@ -24,8 +24,6 @@ import org.powerscala.property.Property
 object Communicator extends HttpHandler with Logging with Listenable {
   private var connections = Map.empty[String, Connection]
 
-  def priority = HttpHandler.Normal
-
   /**
    * Amount of time to wait during polling for a connection to exist since connections are created by the "send" aspect
    * there may be a certain amount of time between polling connects and the connection is created by "send".
@@ -52,7 +50,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
   val disconnected = new UnitProcessor[Connection]("disconnected")
   val disposed = new UnitProcessor[Connection]("disposed")
 
-  Executor.scheduleWithFixedDelay(1.0, 5.0) {
+  private val updater = Executor.scheduleWithFixedDelay(1.0, 5.0) {
     update()
   }
 
@@ -170,6 +168,14 @@ object Communicator extends HttpHandler with Logging with Listenable {
     connection.dispose()
     connections -= connection.id
     info(s"Connection ${connection.id} disposed! ${connections.size} connections still active.")
+  }
+
+  def dispose(): Unit = synchronized {
+    updater.cancel(false)
+
+    connections.foreach {
+      case (id, connection) => dispose(connection)
+    }
   }
 }
 

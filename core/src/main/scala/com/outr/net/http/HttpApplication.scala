@@ -6,7 +6,6 @@ import com.outr.net.http.response.HttpResponseStatus
 import com.outr.net.http.request.HttpRequest
 import org.powerscala._
 import com.outr.net.http.response.HttpResponse
-import scala.Some
 import org.powerscala.concurrent.{Time, Executor}
 import java.util.concurrent.ScheduledFuture
 import org.powerscala.concurrent.Time._
@@ -58,12 +57,6 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    */
   protected def init(): Unit
 
-  override def update(delta: Double) = {
-    super.update(delta)
-
-    // TODO: update pages
-  }
-
   /**
    * Called once when the application is terminating (not guaranteed to be executed).
    */
@@ -77,17 +70,8 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
     onReceive(request, response)
   }
 
-  def receive(request: HttpRequest) = contextualize(request) {
-    val response = processRequest(request, HttpResponse(status = HttpResponseStatus.NotFound))
-    val cached = request.headers.ifModifiedSince match {
-      case Some(modified) if response.content.lastModified != -1 => modified >= response.content.lastModified
-      case _ => false
-    }
-    if (cached) {
-      response.copy(status = HttpResponseStatus.NotModified, content = null)
-    } else {
-      response
-    }
+  final def receive(request: HttpRequest) = contextualize(request) {
+    processRequest(request, HttpResponse(status = HttpResponseStatus.NotFound))
   }
 
   /**
@@ -110,7 +94,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 }
 
 object HttpApplication {
-  val DateParser = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz")
+  def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz")
 
   val stack = new LocalStack[HttpApplication]
 

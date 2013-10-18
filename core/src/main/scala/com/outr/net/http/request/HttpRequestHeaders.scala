@@ -1,11 +1,12 @@
 package com.outr.net.http.request
 
 import com.outr.net.http.{HttpApplication, HttpHeaders}
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders {
+case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders with Logging {
   lazy val ifModifiedSince = date("If-Modified-Since")
   lazy val acceptEncoding = values.get("Accept-Encoding")
 
@@ -14,13 +15,16 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders {
     case None => false
   }
 
-  def date(key: String) = {
-    val value = values.get("key")
-    try {
-      value.map(HttpApplication.DateParser.parse).map(d => d.getTime)
+  def date(key: String) = values.get(key) match {
+    case Some(value) if value.nonEmpty => try {
+      Some(HttpApplication.DateParser.parse(value).getTime)
     } catch {
-      case exc: NumberFormatException => throw new RuntimeException(s"Unable to parse date from ($key): [$value]", exc)
+      case exc: NumberFormatException => {
+        warn(s"Unable to parse date from ($key): [$value]", exc)
+        None
+      }
     }
+    case _ => None
   }
 }
 

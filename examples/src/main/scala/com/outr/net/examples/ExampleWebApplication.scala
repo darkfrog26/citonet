@@ -5,6 +5,7 @@ import com.outr.net.communicator.server.{PongResponder, Communicator}
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
+import com.outr.net.http.handler.CachedHandler
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -15,6 +16,7 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
   protected def createSession(request: HttpRequest, id: String) = new MapSession(id)
 
   def init() = {
+    handlers += CachedHandler     // Add caching support
     Communicator.configure(this)
 
     // Add example html files

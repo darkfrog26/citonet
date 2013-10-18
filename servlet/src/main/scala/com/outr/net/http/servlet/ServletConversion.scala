@@ -6,7 +6,7 @@ import org.powerscala.IO
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
-import com.outr.net.http.content.{InputStreamContent, StringContent, StreamableContent}
+import com.outr.net.http.content.{StreamingContent, InputStreamContent, StringContent, StreamableContent}
 import java.nio.charset.Charset
 
 /**
@@ -73,6 +73,18 @@ object ServletConversion {
           val input = content.input
           ArrayBufferPool.use() {
             case buf => IO.stream(input, output, buf, closeOnComplete = true)
+          }
+        }
+        case content: StreamingContent => {
+          try {
+            content.stream(output)
+          } finally {
+            try {
+              output.flush()
+              output.close()
+            } catch {
+              case t: Throwable => // Ignore issues trying to flush
+            }
           }
         }
         case content: StringContent => {

@@ -2,9 +2,8 @@ package com.outr.net.http
 
 import com.outr.net.http.handler._
 import com.outr.net.http.request.HttpRequest
-import com.outr.net.http.content.HttpContent
+import com.outr.net.http.content.{URLContent, HttpContent, StringContent}
 import com.outr.net.http.response.HttpResponse
-import com.outr.net.http.content.StringContent
 import com.outr.net.http.session.{Session, SessionApplication}
 import org.powerscala.Priority
 
@@ -12,16 +11,18 @@ import org.powerscala.Priority
  * @author Matt Hicks <matt@outr.com>
  */
 abstract class WebApplication[S <: Session] extends SessionApplication[S] with NotFoundApplication {
-  def addContent(uri: String, creator: => HttpContent): HttpHandler = {
-    addContent(uri, request => creator)
+  def addContent(creator: => HttpContent, uris: String*): HttpHandler = {
+    addContent(request => creator, uris: _*)
   }
 
-  def addContent(uri: String, creator: HttpRequest => HttpContent): HttpHandler = {
-    addHandler(uri, HttpHandler(request => HttpResponse(creator(request))))
+  def addContent(creator: HttpRequest => HttpContent, uris: String*): HttpHandler = {
+    addHandler(HttpHandler(request => HttpResponse(creator(request))), uris: _*)
   }
 
-  def addHandler(uri: String, handler: HttpHandler): HttpHandler = {
-    PathMappingHandler.add(this, uri, handler)
+  def addHandler(handler: HttpHandler, uris: String*): HttpHandler = {
+    uris.foreach {
+      case uri => PathMappingHandler.add(this, uri, handler)
+    }
     handler
   }
 
@@ -41,6 +42,23 @@ abstract class WebApplication[S <: Session] extends SessionApplication[S] with N
                    allowCaching: Boolean = true,
                    priority: Priority = Priority.Normal) = {
     handlers.add(FileLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching), priority)
+  }
+
+  def register(path: String, resource: String): Unit = {
+    addContent(URLContent(getClass.getClassLoader.getResource(resource)), path)
+  }
+
+  def register(path: String, url: java.net.URL): Unit = {
+    addContent(URLContent(url), path)
+  }
+
+  def register(resource: String): Unit = {
+    val path = if (resource.startsWith("/")) {
+      resource
+    } else {
+      s"/$resource"
+    }
+    register(path, resource)
   }
 
   protected def notFoundContent(request: HttpRequest) = {

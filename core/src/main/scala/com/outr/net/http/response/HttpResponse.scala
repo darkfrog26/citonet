@@ -12,6 +12,8 @@ case class HttpResponse(content: HttpContent = null,
                         cookies: Set[Cookie] = Set.empty) {
   def setCookie(cookie: Cookie) = copy(cookies = cookies + cookie)
 
+  def setHeader(key: String, value: String) = copy(headers = headers.copy(headers.values + (key -> value)))
+
   /**
    * Merges the contents of this response with the supplied response to create a new HttpResponse object. The supplied
    * response takes priority if there is any overlap.

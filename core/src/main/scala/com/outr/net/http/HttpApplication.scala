@@ -15,8 +15,8 @@ import org.powerscala.event.processor.UnitProcessor
  * @author Matt Hicks <matt@outr.com>
  */
 trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable {
-  private val _stack = new LocalStack[Storage[String, Any]]
-  protected def stack = _stack()
+  private val stack = new LocalStack[Storage[String, Any]]
+  def requestContext = stack()
 
   @volatile private var _initialized = false
   @volatile private var _updater: ScheduledFuture[_] = _
@@ -35,7 +35,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
   /**
    * The HttpRequest for the current thread. This will return null if there is no request contextualized.
    */
-  def request = stack[HttpRequest]("request")
+  def request = requestContext[HttpRequest]("request")
 
   final def initialize() = synchronized {
     if (!initialized) {
@@ -85,8 +85,8 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    */
   def contextualize[T](request: HttpRequest)(f: => T) = {
     HttpApplication.stack.context(this) {             // Push the current HttpApplication onto its stack
-      _stack.context(new MapStorage[String, Any]) {   // Make the stack available for this context
-        stack("request") = request                    // Put the request into the storage
+      stack.context(new MapStorage[String, Any]) {   // Make the stack available for this context
+        requestContext("request") = request                    // Put the request into the storage
         f
       }
     }

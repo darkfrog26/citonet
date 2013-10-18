@@ -22,7 +22,7 @@ object CachedHandler extends Listener[(HttpRequest, HttpResponse), HttpResponse]
   }
 
   def process(request: HttpRequest, response: HttpResponse) = {
-    val cached = request.headers.ifModifiedSince match {
+    val cached = request.headers.IfModifiedSince match {
       case Some(modified) if response.content != null && response.content.lastModified != -1 => {
         modified >= response.content.lastModified
       }

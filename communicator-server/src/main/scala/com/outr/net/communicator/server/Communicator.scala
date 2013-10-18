@@ -56,10 +56,10 @@ object Communicator extends HttpHandler with Logging with Listenable {
 
   def configure(application: WebApplication[_]): Unit = {
     // Add resources needed for Communicator
-    application.addContent("/communicator.css", URLContent(getClass.getClassLoader.getResource("communicator.css")))
-    application.addContent("/communicator.js", URLContent(getClass.getClassLoader.getResource("communicator.js")))
+    application.addContent(URLContent(getClass.getClassLoader.getResource("communicator.css")), "/communicator.css")
+    application.addContent(URLContent(getClass.getClassLoader.getResource("communicator.js")), "/communicator.js")
     application.addClassPath("/GWTCommunicator/", "GWTCommunicator/")
-    application.addHandler("/Communicator/connection", Communicator)
+    application.addHandler(Communicator, "/Communicator/connection")
 
     // Make sure disposal of Connections occurs properly
     application.disposed.on {

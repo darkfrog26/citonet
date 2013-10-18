@@ -14,7 +14,7 @@ import org.powerscala.concurrent.Time._
 trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
   private var sessions = Map.empty[String, S]
 
-  def session = stack[S]("session")
+  def session = requestContext[S]("session")
 
   handlers.add(new SessionCreateHandler, Priority.Critical)      // Add a handler to set the session (critical priority)
 
@@ -51,7 +51,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
         }
       }
       sessions += session.id -> session
-      stack("session") = session
+      requestContext("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
     }
   }

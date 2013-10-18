@@ -7,10 +7,11 @@ import org.powerscala.log.Logging
  * @author Matt Hicks <matt@outr.com>
  */
 case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders with Logging {
-  lazy val ifModifiedSince = date("If-Modified-Since")
-  lazy val acceptEncoding = values.get("Accept-Encoding")
+  lazy val IfModifiedSince = date("If-Modified-Since")
+  lazy val AcceptEncoding = values.get("Accept-Encoding")
+  lazy val UserAgent = values.get("User-Agent")
 
-  def gzipSupport = acceptEncoding match {
+  def gzipSupport = AcceptEncoding match {
     case Some(encoding) => encoding.contains("gzip")
     case None => false
   }

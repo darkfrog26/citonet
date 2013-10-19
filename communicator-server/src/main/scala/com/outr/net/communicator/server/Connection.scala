@@ -4,6 +4,7 @@ import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
 import org.powerscala.log.Logging
 import org.powerscala.concurrent.AtomicInt
+import org.powerscala.MapStorage
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -16,6 +17,8 @@ class Connection(val id: String) extends Listenable with Logging {
   val received = new UnitProcessor[Message]("received")
   val sent = new UnitProcessor[Message]("sent")
   val queued = new UnitProcessor[Message]("queued")
+
+  val store = new MapStorage[Any, Any]()
 
   private var priorityQueue = List.empty[Message]
   private var queue = List.empty[Message]

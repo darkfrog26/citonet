@@ -22,15 +22,15 @@ class OUTRNetServlet extends HttpServlet with Logging {
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
     application = companion.asInstanceOf[HttpApplication]
     application.initialize()
+    info(s"Initialized $clazz as application for servlet successfully.")
   }
 
   override def destroy() = {
-    HttpApplication.stack.context(application) {
-      try {
-        application.dispose()
-      } catch {
-        case t: Throwable => error(s"Exception thrown while attempting to dispose application.", t)
-      }
+    HttpApplication.current = application
+    try {
+      application.dispose()
+    } catch {
+      case t: Throwable => error(s"Exception thrown while attempting to dispose application.", t)
     }
 
     super.destroy()

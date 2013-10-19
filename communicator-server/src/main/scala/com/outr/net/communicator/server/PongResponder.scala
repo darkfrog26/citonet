@@ -6,7 +6,7 @@ package com.outr.net.communicator.server
 object PongResponder {
   def connect() = {
     Communicator.created.on {
-      case connection => {
+      case (connection, data) => {
         val wrapper = connectTo(connection)
         Communicator.disposed.on {
           case c => if (c eq connection) {

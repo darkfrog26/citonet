@@ -10,11 +10,14 @@ import org.powerscala.concurrent.{Time, Executor}
 import java.util.concurrent.ScheduledFuture
 import org.powerscala.concurrent.Time._
 import org.powerscala.event.processor.UnitProcessor
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable {
+  HttpApplication.current = this
+
   private val stack = new LocalStack[Storage[String, Any]]
   def requestContext = stack()
 
@@ -39,6 +42,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 
   final def initialize() = synchronized {
     if (!initialized) {
+      HttpApplication.current = this
       init()
 
       var previous = System.nanoTime()
@@ -84,11 +88,10 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    * @return T
    */
   def contextualize[T](request: HttpRequest)(f: => T) = {
-    HttpApplication.stack.context(this) {             // Push the current HttpApplication onto its stack
-      stack.context(new MapStorage[String, Any]) {   // Make the stack available for this context
-        requestContext("request") = request                    // Put the request into the storage
-        f
-      }
+    HttpApplication.current = this
+    stack.context(new MapStorage[String, Any]) {   // Make the stack available for this context
+      requestContext("request") = request                    // Put the request into the storage
+      f
     }
   }
 }
@@ -96,7 +99,10 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 object HttpApplication {
   def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz")
 
-  val stack = new LocalStack[HttpApplication]
+  private val _current = new AtomicReference[HttpApplication]()
 
-  def apply() = stack()
+  def current_=(application: HttpApplication) = _current.set(application)
+  def current = _current.get()
+
+  def apply[T <: HttpApplication]() = current.asInstanceOf[T]
 }

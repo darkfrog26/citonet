@@ -45,8 +45,9 @@ object Communicator extends HttpHandler with Logging with Listenable {
    */
   val connectionTimeout = Property[Double](default = Some(30.seconds))
 
-  val created = new UnitProcessor[Connection]("created")
-  val connected = new UnitProcessor[Connection]("connected")
+  val created = new UnitProcessor[(Connection, Any)]("created")
+  val connected = new UnitProcessor[(Connection, Any)]("connected")
+  val received = new UnitProcessor[(Connection, Message)]("received")
   val disconnected = new UnitProcessor[Connection]("disconnected")
   val disposed = new UnitProcessor[Connection]("disposed")
 
@@ -130,13 +131,14 @@ object Communicator extends HttpHandler with Logging with Listenable {
       val message = messages.head
       if (message.id == -1) {
         message.event match {
-          case "create" => create(id)
-          case "connect" => connect(id)
+          case "create" => create(id, message.data)
+          case "connect" => connect(id, message.data)
         }
       } else {
         connections.get(id) match {
           case Some(c) => {
             connection = c
+            received.fire(connection -> message)
             connection.receive(message)
           }
           case None => throw new MessageException(s"Connection not found for $id and message: $message.", MessageReceiveFailure.ConnectionNotFound)
@@ -147,22 +149,22 @@ object Communicator extends HttpHandler with Logging with Listenable {
     }
   }
 
-  private def create(id: String) = synchronized {
+  private def create(id: String, data: Any) = synchronized {
     connections.get(id) match {
       case Some(connection) => throw new MessageException(s"Connection already exists ($id)!", MessageReceiveFailure.ConnectionAlreadyExists)
       case None => {
         val connection = new Connection(id)
         connections += id -> connection
-        created.fire(connection)
+        created.fire(connection -> data)
       }
     }
   }
 
-  private def connect(id: String) = {
+  private def connect(id: String, data: Any) = {
     connections.get(id) match {
       case Some(connection) => {
         connection.send("connected", null, highPriority = true)
-        connected.fire(connection)
+        connected.fire(connection -> data)
       }
       case None => throw new MessageException(s"Connection not found for $id during connect!", MessageReceiveFailure.ConnectionNotFound)
     }

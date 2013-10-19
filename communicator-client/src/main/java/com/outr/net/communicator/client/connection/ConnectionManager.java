@@ -20,11 +20,15 @@ public class ConnectionManager {
     private int reconnectInMilliseconds = -1;
     private int failures = 0;
 
+    private boolean firstConnection = true;
+
     public ConnectionManager(GWTCommunicator communicator) {
         this.communicator = communicator;
         uuid = UUID.unique();
         queue = new MessageQueue();
-        queue.enqueueHighPriority("create", null);
+    }
+
+    public void init() {
     }
 
     public boolean hasConnection() {
@@ -38,6 +42,10 @@ public class ConnectionManager {
     public void connect() throws IOException {
         if (connection != null) {
             throw new IOException("Connection already established!");
+        }
+        if (firstConnection) {
+            queue.enqueueHighPriority("create", communicator.createData());
+            firstConnection = false;
         }
         // TODO: support multiple connection types based on settings
         connection = new AJAXConnection(this, communicator.getAJAXURL());
@@ -63,7 +71,7 @@ public class ConnectionManager {
         if (connection == null) {
             throw new RuntimeException("Connection doesn't exist to reconnect with!");
         }
-        queue.enqueueHighPriority("connect", null);
+        queue.enqueueHighPriority("connect", communicator.connectData());
         connection.connect();
     }
 

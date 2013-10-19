@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Timer;
 import com.outr.net.communicator.client.connection.ConnectionManager;
 import com.outr.net.communicator.client.connection.Message;
@@ -20,6 +21,7 @@ import java.util.Map;
  * @author Matt Hicks <matt@outr.com>
  */
 public class GWTCommunicator implements EntryPoint {
+    private JavaScriptObject jsonSettings;
     private Map<String, Object> settings;
     private final ConnectionManager connectionManager;
     public final ErrorDialog error;
@@ -41,6 +43,14 @@ public class GWTCommunicator implements EntryPoint {
         return setting("reconnectDelay", 10000);
     }
 
+    public JSONValue createData() {
+        return JSONConverter.js2JSON(get(jsonSettings, "createData"));
+    }
+
+    public JSONValue connectData() {
+        return JSONConverter.js2JSON(get(jsonSettings, "connectData"));
+    }
+
     public GWTCommunicator() {
         connectionManager = new ConnectionManager(this);
         error = new ErrorDialog(this);
@@ -60,6 +70,7 @@ public class GWTCommunicator implements EntryPoint {
     public void onModuleLoad() {
         initialize();
         error.init();
+        connectionManager.init();
         updater.scheduleRepeating(250);
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
@@ -88,6 +99,7 @@ public class GWTCommunicator implements EntryPoint {
             if (connectionManager.hasConnection()) {
                 return false;
             }
+            jsonSettings = json;
             settings = (Map<String, Object>)JSONConverter.fromJSONValue(new JSONObject(json));
             for (Map.Entry<String, JavaScriptObject> entry : setting("on", new HashMap<String, JavaScriptObject>()).entrySet()) {
                 on(entry.getKey(), get(json, "on." + entry.getKey()));

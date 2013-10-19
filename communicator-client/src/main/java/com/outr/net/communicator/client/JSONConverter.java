@@ -21,6 +21,8 @@ public class JSONConverter {
     public static JSONValue toJSONValue(Object obj) {
         if (obj == null) {
             return JSONNull.getInstance();
+        } else if (obj instanceof JSONValue) {
+            return (JSONValue)obj;
         }
 
         // Check for support before built-in
@@ -65,7 +67,7 @@ public class JSONConverter {
         return fromJSONValue(value);
     }
 
-    public static Object fromJavaScriptObject(JavaScriptObject obj) {
+    public static JSONValue js2JSON(JavaScriptObject obj) {
         String type = typeOf(obj);
         JSONValue value = null;
         if ("array".equalsIgnoreCase(type)) {
@@ -74,9 +76,16 @@ public class JSONConverter {
             value = JSONNull.getInstance();
         } else if ("number".equalsIgnoreCase(type)) {
             value = new JSONNumber(toNumber(obj));
+        } else if ("object".equalsIgnoreCase(type)) {
+            value = new JSONObject(obj);
         } else {
             log("Unknown type for conversion: " + obj + " (" + type + ")");
         }
+        return value;
+    }
+
+    public static Object fromJavaScriptObject(JavaScriptObject obj) {
+        JSONValue value = js2JSON(obj);
         return fromJSONValue(value);
     }
 

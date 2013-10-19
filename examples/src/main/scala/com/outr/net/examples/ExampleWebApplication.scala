@@ -23,16 +23,16 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
     addClassPath("/", "html/")
 
     Communicator.created.on {
-      case connection => {
-        info(s"Created! ${connection.id}")
+      case (connection, data) => {
+        info(s"Created! ${connection.id} - $data")
         connection.received.on {
           case message => info(s"Message Received: $message")
         }
       }
     }
     Communicator.connected.on {
-      case connection => {
-        info(s"Connected! ${connection.id}")
+      case (connection, data) => {
+        info(s"Connected! ${connection.id} - $data")
       }
     }
     Communicator.disconnected.on {

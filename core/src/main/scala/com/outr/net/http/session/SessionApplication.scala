@@ -64,5 +64,5 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
 }
 
 object SessionApplication {
-  def apply[S <: Session]() = HttpApplication().asInstanceOf[SessionApplication[S]]
+  def apply[S <: Session]() = HttpApplication[SessionApplication[S]]()
 }

@@ -41,6 +41,9 @@ object OUTRNetBuild extends Build {
   lazy val servlet = Project("servlet", file("servlet"), settings = createSettings("outrnet-servlet"))
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Servlet))
+  lazy val jetty = Project("jetty", file("jetty"), settings = createSettings("outrnet-jetty"))
+    .dependsOn(servlet)
+    .settings(libraryDependencies ++= Seq(Dependencies.JettyServer))
 
   // Communicator
   lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("outrnet-communicator-client") ++ gwtSettings)
@@ -56,18 +59,19 @@ object OUTRNetBuild extends Build {
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, servlet, communicatorServer)
+    .dependsOn(core, servlet, communicatorServer, jetty)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp, Dependencies.Servlet))
 }
 
 object Dependencies {
   private val PowerScalaVersion = "1.6.3-SNAPSHOT"
-  private val JettyVersion = "9.0.5.v20130815"
+  private val JettyVersion = "9.0.6.v20130930"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
   val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
+  val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
   val GWTQuery = "com.googlecode.gwtquery" % "gwtquery" % "1.3.3" % "provided"
   val Specs2 = "org.specs2" %% "specs2" % "2.2.3" % "test"
 }

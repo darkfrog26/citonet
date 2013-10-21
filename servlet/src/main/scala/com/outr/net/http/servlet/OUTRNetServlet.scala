@@ -37,14 +37,16 @@ class OUTRNetServlet extends HttpServlet with Logging {
   }
 
   override def doGet(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
-    handle(servletRequest, servletResponse)
+    OUTRNetServlet.handle(application, servletRequest, servletResponse)
   }
 
   override def doPost(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
-    handle(servletRequest, servletResponse)
+    OUTRNetServlet.handle(application, servletRequest, servletResponse)
   }
+}
 
-  def handle(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
+object OUTRNetServlet extends Logging {
+  def handle(application: HttpApplication, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
     val request = try {
       ServletConversion.convert(servletRequest)
     } catch {
@@ -55,9 +57,12 @@ class OUTRNetServlet extends HttpServlet with Logging {
     }
     try {
       debug(s"Request: $request")
-      val response = application.receive(request)
-      val gzip = request.headers.gzipSupport
-      ServletConversion.convert(response, servletResponse, gzip)
+      application.receiveContextualized(request) {
+        case response => {
+          val gzip = request.headers.gzipSupport
+          ServletConversion.convert(response, servletResponse, gzip)
+        }
+      }
     } catch {
       case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {
         warn(s"End of File exception occurred for: ${request.url}", t)

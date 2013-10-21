@@ -19,7 +19,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
   HttpApplication.current = this
 
   private val stack = new LocalStack[Storage[String, Any]]
-  def requestContext = stack()
+  def requestContext = stack.get().getOrElse(throw new RuntimeException("RequestContext is not set for the current thread!"))
 
   @volatile private var _initialized = false
   @volatile private var _updater: ScheduledFuture[_] = _
@@ -74,8 +74,13 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
     onReceive(request, response)
   }
 
-  final def receive(request: HttpRequest) = contextualize(request) {
+  def receive(request: HttpRequest) = {
     processRequest(request, HttpResponse(status = HttpResponseStatus.NotFound))
+  }
+
+  final def receiveContextualized(request: HttpRequest)(responseHandler: HttpResponse => Unit) = contextualize(request) {
+    val response = receive(request)
+    responseHandler(response)
   }
 
   /**

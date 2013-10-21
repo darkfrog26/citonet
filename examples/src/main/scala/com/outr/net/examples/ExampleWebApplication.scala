@@ -6,6 +6,7 @@ import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.handler.CachedHandler
+import com.outr.net.http.jetty.JettyServer
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -50,5 +51,9 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
   override def dispose() = {
     super.dispose()
     info("Disposed application!")
+  }
+
+  def main(args: Array[String]): Unit = {
+    JettyServer(this)
   }
 }

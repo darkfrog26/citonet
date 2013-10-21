@@ -9,6 +9,10 @@ import com.outr.net.http.mime.MimeType
 case class URLContent(url: URL,
                       contentTypeOverride: String = null,
                       allowCaching: Boolean = true) extends StreamableContent {
+  if (url == null) {
+    throw new NullPointerException("URL cannot be null!")
+  }
+
   lazy val connection = url.javaURL.openConnection()
 
   lazy val input = connection.getInputStream

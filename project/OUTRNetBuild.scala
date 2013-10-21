@@ -49,6 +49,7 @@ object OUTRNetBuild extends Build {
   lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("outrnet-communicator-client") ++ gwtSettings)
     .settings(libraryDependencies ++= Seq(Dependencies.GWTQuery, Dependencies.JettyWebapp))
     .settings(gwtTemporaryPath <<= classDirectory in Compile)
+    .settings(publishArtifact in (Compile, packageBin) := true)
   lazy val communicatorServer = Project("communicator-server", file("communicator-server"), settings = createSettings("outrnet-communicator-server"))
     .dependsOn(communicatorClient, core)
     .settings(compile in Compile <<= (compile in Compile) dependsOn(gwtCompile in (communicatorClient, Gwt)))

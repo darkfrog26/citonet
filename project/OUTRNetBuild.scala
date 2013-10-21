@@ -28,7 +28,7 @@ object OUTRNetBuild extends Build {
 
   // Aggregator
   lazy val root = Project("root", file("."), settings = createSettings("outrnet"))
-    .aggregate(core, netty, servlet, communicatorClient, communicatorServer, proxy)
+    .aggregate(core, netty, servlet, jetty, communicatorClient, communicatorServer, proxy)
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))

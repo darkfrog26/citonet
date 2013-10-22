@@ -117,10 +117,8 @@ public class GWTCommunicator implements EntryPoint {
         received.on(new Listener<Message>() {
             @Override
             public void process(Message message) {
-                if (event.equalsIgnoreCase(message.event)) {
-                    Object data = message.data;
-                    // TODO: provide conversion when necessary
-                    Listenable.call(f, data);
+                if (event.equalsIgnoreCase(message.event) || "received".equalsIgnoreCase(event)) {
+                    Listenable.call(f, message.content);
                 }
             }
         });
@@ -167,6 +165,10 @@ public class GWTCommunicator implements EntryPoint {
 
     private native void notifyHostPage() /*-{
         $wnd.communicatorReady();
+    }-*/;
+
+    public static native JavaScriptObject parse(String s) /*-{
+        return JSON.parse(s);
     }-*/;
 
     public static JavaScriptObject get(JavaScriptObject obj, String lookup) {

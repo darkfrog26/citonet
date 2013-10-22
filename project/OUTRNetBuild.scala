@@ -3,6 +3,7 @@ import Keys._
 
 import net.thunderklaus.GwtPlugin._
 
+
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
     version := "1.0.1-SNAPSHOT",
@@ -59,9 +60,10 @@ object OUTRNetBuild extends Build {
     .dependsOn(core)
 
   // Examples
-  lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
+  lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
     .dependsOn(core, servlet, communicatorServer, jetty)
-    .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp, Dependencies.Servlet))
+    .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
+    .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
 
 object Dependencies {

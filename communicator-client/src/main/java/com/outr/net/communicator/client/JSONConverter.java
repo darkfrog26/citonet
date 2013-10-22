@@ -63,8 +63,13 @@ public class JSONConverter {
     }
 
     public static Object fromString(String json) {
-        JSONValue value = JSONParser.parseStrict(json);
-        return fromJSONValue(value);
+        try {
+            JSONValue value = JSONParser.parseStrict(json);
+            return fromJSONValue(value);
+        } catch(RuntimeException exc) {
+            log("Unable to parse JSON: [" + json + "]");
+            throw exc;
+        }
     }
 
     public static JSONValue js2JSON(JavaScriptObject obj) {

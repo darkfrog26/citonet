@@ -6,13 +6,14 @@ import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.handler.CachedHandler
-import com.outr.net.http.jetty.JettyServer
+import com.outr.net.http.jetty.JettyApplication
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ExampleWebApplication extends WebApplication[MapSession] with Logging {
+object ExampleWebApplication extends WebApplication[MapSession] with Logging with JettyApplication {
   PongResponder.connect()     // Support ping-pong
+  TimeResponder.connect()     // Support time request
 
   protected def createSession(request: HttpRequest, id: String) = new MapSession(id)
 
@@ -51,9 +52,5 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging {
   override def dispose() = {
     super.dispose()
     info("Disposed application!")
-  }
-
-  def main(args: Array[String]): Unit = {
-    JettyServer(this)
   }
 }

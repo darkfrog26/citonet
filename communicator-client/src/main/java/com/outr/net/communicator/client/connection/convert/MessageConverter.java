@@ -4,6 +4,7 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.outr.net.communicator.client.GWTCommunicator;
 import com.outr.net.communicator.client.JSONConverter;
 import com.outr.net.communicator.client.JSONSupport;
 import com.outr.net.communicator.client.connection.Message;
@@ -33,7 +34,9 @@ public class MessageConverter implements JSONSupport {
                 int id = (int)Math.round(((JSONNumber)obj.get("id")).doubleValue());
                 String event = ((JSONString)obj.get("event")).stringValue();
                 Object data = JSONConverter.fromJSONValue(obj.get("data"));
-                return new Message(id, event, data);
+                Message message = new Message(id, event, data);
+                message.content = GWTCommunicator.get(obj.getJavaScriptObject(), "data");
+                return message;
             }
         }
         return null;

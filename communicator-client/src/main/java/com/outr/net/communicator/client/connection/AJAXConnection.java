@@ -28,7 +28,8 @@ public class AJAXConnection implements Connection {
                 AJAXResponse r = (AJAXResponse)JSONConverter.fromString(response.getText());
                 if (r.status) {
                     for (int i = 0; i < r.data.size(); i++) {
-                        manager.received(r.data.get(i));
+                        Message message = r.data.get(i);
+                        manager.received(message);
                     }
 
                     connectPolling();           // Reconnect polling

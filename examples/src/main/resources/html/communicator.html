@@ -17,12 +17,12 @@
                 error: function(err) {
                     console.log('Error occurred: ' + err);
                 },
-                received: function(msg) {
-                    console.log('Received: ' + JSON.stringify(msg));
-                },
                 pong: function(time) {
                     var elapsed = new Date().getTime() - time;
                     alert("Pong received! Round-trip took: " + elapsed + "ms");
+                },
+                time: function(data) {
+                    alert('Time Received: ' + data + ' - ' + data['millis'] + 'ms - ' + data['nanos'] + 'ns');
                 }
             }
         });
@@ -30,11 +30,16 @@
         function ping() {
             communicator.send('ping', new Date().getTime());
         }
+
+        function requestTime() {
+            communicator.send('time');
+        }
     </script>
 </head>
 <body>
 Hello World!
 <br/><br/>
 <button id="pingButton" onclick="ping();">Ping</button>
+<button id="timeButton" onclick="requestTime();">Request Time from Server</button>
 </body>
 </html>

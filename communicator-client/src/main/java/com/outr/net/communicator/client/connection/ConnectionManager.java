@@ -138,7 +138,14 @@ public class ConnectionManager {
 
     public void handleError(int errorCode) {
         if (errorCode == MessageReceiveFailure.ConnectionNotFound) {
-            communicator.reload();
+            communicator.error.show("Connection Not Found", "The server says the connection was not available to connect to. This may be caused by the connection timing out or a server restart. Reloading the page...");
+            communicator.reload(false, true, 3000);
+        } else if (errorCode == MessageReceiveFailure.ConnectionAlreadyExists) {
+            communicator.error.show("Connection Already Exists", "The server says the referenced connection already exists. Reloading the page.");
+            communicator.reload(false, true, 3000);
+        } else if (errorCode == MessageReceiveFailure.InvalidMessageId) {
+            communicator.error.show("Invalid Message ID", "The server says the referenced message id is incorrect. Reloading the page.");
+            communicator.reload(false, true, 10000);
         } else {
             log("ConnectionManager.handleError: Unhandled error code: " + errorCode);
         }

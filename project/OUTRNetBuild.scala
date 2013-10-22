@@ -5,7 +5,7 @@ import net.thunderklaus.GwtPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.0.0-SNAPSHOT",
+    version := "1.0.1-SNAPSHOT",
     organization := "com.outr.net",
     scalaVersion := "2.10.3",
     libraryDependencies ++= Seq(

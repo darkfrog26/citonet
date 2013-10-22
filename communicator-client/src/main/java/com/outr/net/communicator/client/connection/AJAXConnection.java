@@ -37,6 +37,9 @@ public class AJAXConnection implements Connection {
                 }
             } else {
                 pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")", null);
+                if (response.getStatusCode() == 404) {      // Resource not found, so reload the browser
+                    manager.communicator.reload(true, true, 0);
+                }
             }
         }
 

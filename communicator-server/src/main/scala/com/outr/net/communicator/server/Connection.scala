@@ -46,10 +46,11 @@ class Connection(val id: String) extends Listenable with Logging {
 
   def messages(lastSentId: Int) = synchronized {
     if (priorityQueue.nonEmpty || queue.nonEmpty) {
-      if (queue.nonEmpty && queue.head.id != lastSentId + 1) {
+      val sendQueue = queue.reverse
+      if (queue.nonEmpty && sendQueue.head.id != lastSentId + 1) {
         throw new MessageException(s"Last Sent ID is not correct. Expected: ${lastSentId + 1}, Received: ${queue.head.id}.", MessageReceiveFailure.InvalidMessageId)
       }
-      val messages = priorityQueue.reverse ::: queue.reverse
+      val messages = priorityQueue.reverse ::: sendQueue
       sentMessages = messages
       priorityQueue = List.empty
       queue = List.empty

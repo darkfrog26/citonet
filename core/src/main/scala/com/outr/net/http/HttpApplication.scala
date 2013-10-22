@@ -94,7 +94,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    */
   def contextualize[T](request: HttpRequest)(f: => T) = {
     HttpApplication.current = this
-    stack.context(new MapStorage[String, Any]) {   // Make the stack available for this context
+    stack.context(new MapStorage[String, Any]()) {   // Make the stack available for this context
       requestContext("request") = request                    // Put the request into the storage
       f
     }

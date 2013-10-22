@@ -99,7 +99,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
   }
 
   private def receive(request: HttpRequest, id: String, lastReceiveId: Int) = {
-    debug(s"Receive: $id, $lastReceiveId, $request")
+//    info(s"Receive: $id, $lastReceiveId, $request")
 
     Time.waitFor(waitForConnectionTime()) {    // Wait for a short period for the connection to be created if it doesn't exist
       connections.contains(id)

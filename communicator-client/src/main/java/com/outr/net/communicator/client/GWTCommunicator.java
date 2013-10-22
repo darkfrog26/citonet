@@ -131,18 +131,23 @@ public class GWTCommunicator implements EntryPoint {
         connectionManager.send(event, obj);
     }
 
-    public void reload() {
-        error.show("Reloading Page", "The page will now be reloaded. If the browser doesn't reload on it's own please press the reload button in your browser.");
+    public void reload(boolean showReloading, boolean force, int delay) {
+        if (showReloading) {
+            error.show("Reloading Page", "The page will now be reloaded. If the browser doesn't reload on it's own please press the reload button in your browser.");
+        }
         updater.cancel();       // Stop the timer so nothing else happens while we work
-        reloadBrowser(true);
+        reloadBrowser(force, delay);
     }
 
     public static native void log(String message) /*-{
         $wnd.console.log(message);
     }-*/;
 
-    public static native void reloadBrowser(boolean force) /*-{
-        $wnd.location.reload(force)
+    public static native void reloadBrowser(boolean force, int delay) /*-{
+        var f = function() {
+            $wnd.location.reload(force);
+        };
+        setTimeout(f, delay);
     }-*/;
 
     private native void initialize() /*-{

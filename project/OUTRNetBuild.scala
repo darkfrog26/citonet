@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 import net.thunderklaus.GwtPlugin._
-
+import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(

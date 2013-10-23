@@ -12,6 +12,10 @@ trait HttpHandler {
 
 object HttpHandler {
   def apply(f: HttpRequest => HttpResponse) = new HttpHandler {
-    def onReceive(request: HttpRequest, response: HttpResponse) = response.merge(f(request))
+    def onReceive(request: HttpRequest, response: HttpResponse) = try {
+      response.merge(f(request))
+    } catch {
+      case t: Throwable => throw new RuntimeException(s"Failed to merge for URL: ${request.url}", t)
+    }
   }
 }

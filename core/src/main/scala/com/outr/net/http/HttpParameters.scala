@@ -13,6 +13,10 @@ case class HttpParameters(values: Map[String, List[String]] = Map.empty) {
   def get(name: String) = values.get(name)
 
   def getFirst(name: String) = get(name).map(l => l.head)
+
+  def apply(name: String) = get(name).getOrElse(throw new NullPointerException(s"No parameter found for: $name in $values"))
+
+  def first(name: String) = apply(name).head
 }
 
 object HttpParameters {

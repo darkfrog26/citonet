@@ -7,12 +7,14 @@ import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.handler.HandlerApplication
 import org.powerscala.log.Logging
 import org.powerscala.concurrent.Time._
+import org.powerscala.reflect._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
-  private var sessions = Map.empty[String, S]
+  private var _sessions = Map.empty[String, S]
+  lazy val sessions = new Sessions
 
   def session = requestContext[S]("session")
 
@@ -26,13 +28,19 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
     super.update(delta)
 
     // Update each session in this application
-    sessions.values.foreach {
+    _sessions.values.foreach {
       case session => session.update(delta)
     }
   }
 
   protected[session] def remove(id: String) = synchronized {
-    sessions -= id
+    _sessions -= id
+  }
+
+  override def dispose() = {
+    super.dispose()
+
+    _sessions.values.foreach(s => s.dispose())
   }
 
   class SessionCreateHandler extends HttpHandler {
@@ -40,7 +48,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       val session = request.cookie(cookieName) match {      // Find the cookie for the session
         case Some(cookie) => {                // Cookie found
           val id = cookie.value
-          sessions.get(id) match {
+          _sessions.get(id) match {
             case Some(s) => s
             case None => createSession(request, id)
           }
@@ -50,16 +58,22 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
           createSession(request, id)
         }
       }
-      sessions += session.id -> session
+      _sessions += session.id -> session
       requestContext("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
     }
   }
 
-  override def dispose() = {
-    super.dispose()
-
-    sessions.values.foreach(s => s.dispose())
+  class Sessions private[session]() {
+    def map = _sessions
+    def values = _sessions.values
+    def valuesByType[T](implicit manifest: Manifest[T]) = {
+      _sessions.values.flatMap {
+        case session => session.values.collect {
+          case v if v.getClass.hasType(manifest.runtimeClass) => v.asInstanceOf[T]
+        }
+      }
+    }
   }
 }
 

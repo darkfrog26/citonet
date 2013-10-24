@@ -83,6 +83,8 @@ public class JSONConverter {
             value = new JSONNumber(toNumber(obj));
         } else if ("object".equalsIgnoreCase(type)) {
             value = new JSONObject(obj);
+        } else if ("string".equalsIgnoreCase(type)) {
+            value = new JSONString(obj.toString());
         } else {
             log("Unknown type for conversion: " + obj + " (" + type + ")");
         }

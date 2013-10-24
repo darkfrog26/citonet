@@ -20,9 +20,9 @@ class Connection(val id: String) extends Listenable with Logging {
 
   val store = new MapStorage[Any, Any]()
 
-  private var priorityQueue = List.empty[Message]
-  private var queue = List.empty[Message]
-  private var sentMessages = List.empty[Message]
+  @volatile private var priorityQueue = List.empty[Message]
+  @volatile private var queue = List.empty[Message]
+  @volatile private var sentMessages = List.empty[Message]
 
   /**
    * Send a message to the client.
@@ -35,7 +35,7 @@ class Connection(val id: String) extends Listenable with Logging {
     val sendId = if (highPriority) -1 else lastSentId.addAndGet(1)
     val message = Message(sendId, event, data)
     if (highPriority) {
-      priorityQueue = message :: queue
+      priorityQueue = message :: priorityQueue
     } else {
       queue = message :: queue
     }

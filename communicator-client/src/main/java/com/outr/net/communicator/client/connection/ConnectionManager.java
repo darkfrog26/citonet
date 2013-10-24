@@ -124,7 +124,8 @@ public class ConnectionManager {
     public void received(Message message) {
         int expectedId = lastReceiveId + 1;
         if (message.id != -1 && message.id != expectedId) {
-            log("Receive id is incorrect! Last Receive ID: " + lastReceiveId + ", Message Id: " + message.id + ", Expected: " + expectedId + ", Ignoring message and re-requesting!");
+            log("Receive id is incorrect (message from server)! Last Receive ID: " + lastReceiveId + ", Message Id: " + message.id + ", Expected: " + expectedId + ", Ignoring message and re-requesting!");
+            // TODO: properly re-request
             return;
         }
         communicator.received.fire(message);

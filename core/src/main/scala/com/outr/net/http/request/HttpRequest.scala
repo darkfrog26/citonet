@@ -2,7 +2,8 @@ package com.outr.net.http.request
 
 import com.outr.net.{IP, Method, URL}
 import com.outr.net.http.Cookie
-import com.outr.net.http.content.HttpContent
+import com.outr.net.http.content.{InputStreamContent, HttpContent}
+import org.powerscala.IO
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -16,6 +17,13 @@ class HttpRequest(val url: URL,
                   val remoteHost: String,
                   val remotePort: Int) {
   def cookie(name: String) = cookies.get(name)
+
+  lazy val contentString = content match {
+    case Some(c) => c match {
+      case isc: InputStreamContent => Some(IO.copy(isc.input))
+    }
+    case None => None
+  }
 
   override def toString = s"$url ($method)"
 }

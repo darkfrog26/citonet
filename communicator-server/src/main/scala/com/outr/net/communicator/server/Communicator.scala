@@ -3,10 +3,9 @@ package com.outr.net.communicator.server
 import com.outr.net.http.{WebApplication, HttpHandler}
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
-import com.outr.net.http.content.{URLContent, InputStreamContent, StringContent}
+import com.outr.net.http.content.{URLContent, StringContent}
 
 import org.powerscala.json._
-import org.powerscala.IO
 import scala.util.parsing.json.JSON
 import org.powerscala.log.Logging
 import org.powerscala.event.processor.UnitProcessor
@@ -22,6 +21,8 @@ import org.powerscala.property.Property
  * @author Matt Hicks <matt@outr.com>
  */
 object Communicator extends HttpHandler with Logging with Listenable {
+  val debug = Property[Boolean]()
+
   private var connections = Map.empty[String, Connection]
 
   /**
@@ -69,12 +70,15 @@ object Communicator extends HttpHandler with Logging with Listenable {
   }
 
   def onReceive(request: HttpRequest, response: HttpResponse) = {
-    val data = request.content match {
-      case Some(content) => content match {
-        case isc: InputStreamContent => JSON.parseFull(IO.copy(isc.input)).get.asInstanceOf[Map[String, Any]]
+    val data = request.contentString.map {
+      case content => {
+        if (debug()) {
+          info(s"Received: [$content]")
+        }
+        JSON.parseFull(content).get.asInstanceOf[Map[String, Any]]
       }
-      case None => null
-    }
+    }.getOrElse(throw new NullPointerException("HttpRequest sent to Communicator has no POST data."))
+
     val id = data("id").asInstanceOf[String]
     val messageType = data("type").asInstanceOf[String]
 
@@ -94,6 +98,9 @@ object Communicator extends HttpHandler with Logging with Listenable {
 
         generate(Response(status = false, failure = exc.failure), specifyClassName = false)
       }
+    }
+    if (debug()) {
+      info(s"Response: [$json]")
     }
     response.copy(content = StringContent(json, "application/json"), status = HttpResponseStatus.OK)
   }

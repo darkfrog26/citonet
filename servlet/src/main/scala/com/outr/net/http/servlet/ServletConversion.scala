@@ -8,6 +8,7 @@ import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
 import com.outr.net.http.content.{StreamingContent, InputStreamContent, StringContent, StreamableContent}
 import java.nio.charset.Charset
+import com.outr.net.http.HttpParameters
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -15,7 +16,10 @@ import java.nio.charset.Charset
 object ServletConversion {
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
-    val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr))
+    val params = HttpParameters(servletRequest.getParameterMap.collect {
+      case (name, values) => name -> values.toList
+    }.toMap)
+    val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
     val method = Method(servletRequest.getMethod)
     val headers = servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap
     val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?

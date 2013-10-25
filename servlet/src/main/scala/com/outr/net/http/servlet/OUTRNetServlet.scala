@@ -60,7 +60,7 @@ object OUTRNetServlet extends Logging {
       application.receiveContextualized(request) {
         case response => {
           val gzip = request.headers.gzipSupport
-          ServletConversion.convert(response, servletResponse, gzip)
+          ServletConversion.convert(request, response, servletResponse, gzip)
         }
       }
     } catch {

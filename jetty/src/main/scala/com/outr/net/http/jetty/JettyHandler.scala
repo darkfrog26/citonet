@@ -13,5 +13,6 @@ import com.outr.net.http.servlet.OUTRNetServlet
 class JettyHandler private[jetty](val application: HttpApplication) extends AbstractHandler with Logging {
   def handle(target: String, baseRequest: Request, request: HttpServletRequest, response: HttpServletResponse) = {
     OUTRNetServlet.handle(application, request, response)
+    baseRequest.setHandled(true)
   }
 }

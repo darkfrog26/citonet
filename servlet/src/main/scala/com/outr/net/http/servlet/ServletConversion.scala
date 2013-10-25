@@ -34,7 +34,10 @@ object ServletConversion {
     request
   }
 
-  def convert(response: HttpResponse, servletResponse: javax.servlet.http.HttpServletResponse, gzip: Boolean) = {
+  def convert(request: HttpRequest,
+              response: HttpResponse,
+              servletResponse: javax.servlet.http.HttpServletResponse,
+              gzip: Boolean) = {
     servletResponse.setStatus(response.status.code)
     response.headers.values.foreach {
       case (key, value) => servletResponse.setHeader(key, value)

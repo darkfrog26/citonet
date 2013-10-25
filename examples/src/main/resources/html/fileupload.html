@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>File Upload Test</title>
+        <style type="text/css">
+            label {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <form action="/uploader" enctype="multipart/form-data" method="post">
+            <label>
+                Text:
+                <input name="text"/>
+            </label>
+            <label>
+                File:
+                <input name="files" type="file" multiple="multiple"/>
+            </label>
+            <input type="submit"/>
+        </form>
+    </body>
+</html>

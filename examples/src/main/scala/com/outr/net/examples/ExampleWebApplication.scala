@@ -5,8 +5,11 @@ import com.outr.net.communicator.server.{PongResponder, Communicator}
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
-import com.outr.net.http.handler.CachedHandler
+import com.outr.net.http.handler.{MultipartHandler, CachedHandler}
 import com.outr.net.http.jetty.JettyApplication
+import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
+import java.io.File
+import com.outr.net.http.content.StringContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -20,6 +23,16 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
   def init() = {
     handlers += CachedHandler     // Add caching support
     Communicator.configure(this)
+
+    addHandler(new MultipartHandler {
+      def onField(name: String, value: String) = println(s"onField! $name = $value")
+
+      def onFile(filename: String, file: File) = println(s"onFile! $filename - ${file.length()}")
+
+      def finish(request: HttpRequest, response: HttpResponse) = {
+        response.copy(status = HttpResponseStatus.OK, content = StringContent("Received files!"))
+      }
+    }, "/uploader")
 
     // Add example html files
     addClassPath("/", "html/")

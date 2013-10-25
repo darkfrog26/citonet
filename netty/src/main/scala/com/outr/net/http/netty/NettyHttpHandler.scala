@@ -24,7 +24,7 @@ class NettyHttpHandler(support: NettyHttpSupport) extends SimpleChannelInboundHa
 //      nettyResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, response.contentType)
       response.content match {
         case c: URLContent => {
-          NettyRequestHandler.streamURL(c.url.javaURL, ctx, nettyRequest, response.content.contentType)
+          NettyRequestHandler.streamURL(c.url.javaURL, ctx, nettyRequest, response.content.contentType.toString)
         }
       }
 

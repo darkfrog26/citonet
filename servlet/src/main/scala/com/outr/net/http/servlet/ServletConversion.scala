@@ -3,12 +3,15 @@ package com.outr.net.http.servlet
 import com.outr.net.{IP, Method, ArrayBufferPool, URL}
 import scala.collection.JavaConversions._
 import org.powerscala.IO
-import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
-import com.outr.net.http.content.{StreamingContent, InputStreamContent, StringContent, StreamableContent}
+import com.outr.net.http.content._
 import java.nio.charset.Charset
 import com.outr.net.http.HttpParameters
+import com.outr.net.http.content.InputStreamContent
+import scala.Some
+import com.outr.net.http.response.HttpResponse
+import com.outr.net.http.content.StringContent
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -22,8 +25,9 @@ object ServletConversion {
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
     val method = Method(servletRequest.getMethod)
     val headers = servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap
+    val contentType = ContentType.parse(servletRequest.getContentType)
     val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
-      Some(InputStreamContent(servletRequest.getInputStream, servletRequest.getContentType, servletRequest.getContentLength, lastModified = -1L))
+      Some(InputStreamContent(servletRequest.getInputStream, contentType, servletRequest.getContentLength, lastModified = -1L))
     } else {
       None
     }
@@ -57,7 +61,7 @@ object ServletConversion {
     }
     if (response.content != null) {
       // Send the content type
-      servletResponse.setContentType(response.content.contentType)
+      servletResponse.setContentType(response.content.contentType.toString)
       servletResponse.setCharacterEncoding("UTF-8")
       if (response.content.lastModified != -1) {    // Send last modified if available
         val date = "%1$ta, %1$te %1$tb %1$tY %1$tT %1$tZ".format(response.content.lastModified)

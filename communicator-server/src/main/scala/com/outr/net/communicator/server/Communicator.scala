@@ -3,7 +3,7 @@ package com.outr.net.communicator.server
 import com.outr.net.http.{WebApplication, HttpHandler}
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
-import com.outr.net.http.content.{URLContent, StringContent}
+import com.outr.net.http.content.{ContentType, URLContent, StringContent}
 
 import org.powerscala.json._
 import scala.util.parsing.json.JSON
@@ -102,7 +102,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     if (debug()) {
       info(s"Response: [$json]")
     }
-    response.copy(content = StringContent(json, "application/json"), status = HttpResponseStatus.OK)
+    response.copy(content = StringContent(json, ContentType.JSON), status = HttpResponseStatus.OK)
   }
 
   private def receive(request: HttpRequest, id: String, lastReceiveId: Int) = {

@@ -7,7 +7,7 @@ import com.outr.net.http.mime.MimeType
  * @author Matt Hicks <matt@outr.com>
  */
 case class URLContent(url: URL,
-                      contentTypeOverride: String = null,
+                      contentTypeOverride: ContentType = null,
                       allowCaching: Boolean = true) extends StreamableContent {
   if (url == null) {
     throw new NullPointerException("URL cannot be null!")
@@ -20,7 +20,7 @@ case class URLContent(url: URL,
   lazy val contentType = if (contentTypeOverride != null) {
     contentTypeOverride
   } else {
-    MimeType.lookup(url.extension, connection.getContentType)
+    ContentType.parse(MimeType.lookup(url.extension, connection.getContentType))
   }
 
   lazy val contentLength = connection.getContentLengthLong

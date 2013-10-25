@@ -33,7 +33,7 @@ object OUTRNetBuild extends Build {
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
-    .settings(libraryDependencies ++= Seq(Dependencies.Specs2))
+    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.Specs2))
 
   // HTTP Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
@@ -73,6 +73,7 @@ object Dependencies {
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
   val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"
+  val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
   val GWTQuery = "com.googlecode.gwtquery" % "gwtquery" % "1.3.3" % "provided"

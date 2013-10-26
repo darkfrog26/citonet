@@ -5,7 +5,7 @@ import com.outr.net.communicator.server.{PongResponder, Communicator}
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
-import com.outr.net.http.handler.{MultipartHandler, CachedHandler}
+import com.outr.net.http.handler.{MultipartSupport, MultipartHandler, CachedHandler}
 import com.outr.net.http.jetty.JettyApplication
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 import java.io.File
@@ -24,7 +24,11 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
     handlers += CachedHandler     // Add caching support
     Communicator.configure(this)
 
-    addHandler(new MultipartHandler {
+    addHandler(new MultipartHandler with MultipartSupport {
+      def create(request: HttpRequest, response: HttpResponse) = this
+
+      def begin(request: HttpRequest, response: HttpResponse) = println(s"Beginning multipart processing...")
+
       def onField(name: String, value: String) = println(s"onField! $name = $value")
 
       def onFile(filename: String, file: File) = println(s"onFile! $filename - ${file.length()}")

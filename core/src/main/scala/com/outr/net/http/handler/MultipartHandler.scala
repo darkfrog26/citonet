@@ -13,26 +13,42 @@ import scala.collection.JavaConversions._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
+trait MultipartSupport {
+  def begin(request: HttpRequest, response: HttpResponse): Unit
+
+  def onField(name: String, value: String): Unit
+
+  def onFile(filename: String, file: File): Unit
+
+  def failure(request: HttpRequest, response: HttpResponse, reason: String) = {
+    response.copy(status = HttpResponseStatus.InternalServerError, content = StringContent(reason))
+  }
+
+  def finish(request: HttpRequest, response: HttpResponse): HttpResponse
+}
+
 trait MultipartHandler extends HttpHandler with Logging {
   def onReceive(request: HttpRequest, response: HttpResponse) = {
+    val support = create(request, response)
     request.content match {
-      case Some(content) => if (content.contentType.isMultipart) {
+      case Some(content) => if (content.contentType.is(ContentType.MultiPartFormData)) {
         val input = content match {
           case c: StreamableContent => c.input
           case _ => throw new RuntimeException(s"Unsupported content: ${content.getClass}")
         }
+        support.begin(request, response)
         val length = content.contentLength
         val upload = new FileUpload(MultipartHandler.FileFactory)
         val items = upload.parseRequest(MultipartRequestContext("UTF-8", length, content.contentType, input))
         items.foreach {
           case item => {
             if (item.isFormField) {
-              onField(item.getFieldName, item.getString)
+              support.onField(item.getFieldName, item.getString)
             } else {
               val file = File.createTempFile(item.getName, "outrnet")
               try {
                 item.write(file)
-                onFile(item.getName, file)
+                support.onFile(item.getName, file)
               } finally {
                 if (!file.delete()) {
                   warn(s"Unable to delete temporary file: ${file.getAbsolutePath}")
@@ -43,23 +59,15 @@ trait MultipartHandler extends HttpHandler with Logging {
             item.delete()
           }
         }
-        finish(request, response)
+        support.finish(request, response)
       } else {
-        failure(request, response, s"${request.url} expected multipart content, but ${content.contentType} content was sent.")
+        support.failure(request, response, s"${request.url} expected multipart content, but ${content.contentType} content was sent.")
       }
-      case None => failure(request, response, s"${request.url} expected multipart content, but no content was sent.")
+      case None => support.failure(request, response, s"${request.url} expected multipart content, but no content was sent.")
     }
   }
 
-  def onField(name: String, value: String): Unit
-
-  def onFile(filename: String, file: File): Unit
-
-  protected def failure(request: HttpRequest, response: HttpResponse, reason: String) = {
-    response.copy(status = HttpResponseStatus.InternalServerError, content = StringContent(reason))
-  }
-
-  def finish(request: HttpRequest, response: HttpResponse): HttpResponse
+  def create(request: HttpRequest, response: HttpResponse): MultipartSupport
 }
 
 object MultipartHandler {

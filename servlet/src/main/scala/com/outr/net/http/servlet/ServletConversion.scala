@@ -69,7 +69,7 @@ object ServletConversion {
       }
       if (gzip) {
         servletResponse.setHeader("Content-Encoding", "gzip")
-      } else {
+      } else if (response.content.contentLength != -1L) {
         servletResponse.setContentLength(response.content.contentLength.toInt)    // Only set content-length if not gzipping
       }
 

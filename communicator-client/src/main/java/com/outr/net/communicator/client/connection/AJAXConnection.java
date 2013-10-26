@@ -38,7 +38,11 @@ public class AJAXConnection implements Connection {
                         pollError("Status was failure: " + r.failure, r);
                     }
                 } else {
-                    pollError("Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")", null);
+                    String message = null;
+                    if (response.getStatusCode() != 0) {
+                        message = "Bad Response: " + response.getStatusText() + " (" + response.getStatusCode() + ")";
+                    }
+                    pollError(message, null);
                     if (response.getStatusCode() == 404) {      // Resource not found, so reload the browser
                         manager.communicator.reload(true, true, 0);
                     }
@@ -133,7 +137,9 @@ public class AJAXConnection implements Connection {
     }
 
     private void pollError(String error, AJAXResponse response) {
-        log("Error received from poll: " + error);
+        if (error != null) {
+            log("Error received from poll: " + error);
+        }
         manager.disconnected();
         responseError(response);
     }

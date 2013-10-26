@@ -17,6 +17,10 @@ class Connection(val id: String) extends Listenable with Logging {
   val received = new UnitProcessor[Message]("received")
   val sent = new UnitProcessor[Message]("sent")
   val queued = new UnitProcessor[Message]("queued")
+  val heardFrom = new UnitProcessor[Long]("heardFrom")
+  heardFrom.on {
+    case time => lastHeard = time
+  }
 
   val store = new MapStorage[Any, Any]()
 
@@ -67,7 +71,7 @@ class Connection(val id: String) extends Listenable with Logging {
    * @throws MessageException if the message id is not in the correct order
    */
   def receive(message: Message) = synchronized {
-    heardFrom()             // Update the lastHeardFrom upon receipt of any message from client
+    heardFrom.fire(System.currentTimeMillis())  // Update the lastHeardFrom upon receipt of any message from client
     val expectedId = lastReceiveId.get() + 1
     if (message.id != -1 && message.id != expectedId) {
       val text = s"Invalid message id received on server: ${message.id}, but expected: $expectedId"
@@ -90,5 +94,4 @@ class Connection(val id: String) extends Listenable with Logging {
   }
 
   def lastHeardFrom = lastHeard
-  def heardFrom() = lastHeard = System.currentTimeMillis()
 }

@@ -12,8 +12,8 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   lazy val UserAgent = values.get("User-Agent")
 
   def gzipSupport = AcceptEncoding match {
-    case Some(encoding) => encoding.contains("gzip")
-    case None => false
+    case Some(encoding) if encoding != null => encoding.contains("gzip")
+    case _ => false
   }
 
   def date(key: String) = values.get(key) match {

@@ -22,7 +22,7 @@ case class HttpResponse(content: HttpContent = null,
    */
   def merge(response: HttpResponse) = {
     if (content != null && response.content != null) {
-      throw new RuntimeException("Cannot merge with two HttpContents!")
+      throw new RuntimeException(s"Cannot merge with two HttpContents! First: $content, Second: ${response.content}")
     }
     val status = response.status
     val headers = this.headers.merge(response.headers)

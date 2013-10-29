@@ -26,4 +26,6 @@ case class URLContent(url: URL,
   lazy val contentLength = connection.getContentLengthLong
 
   lazy val lastModified = if (allowCaching) connection.getLastModified else -1L
+
+  override def toString = s"URLContent($url, contentType: $contentType, contentLength: $contentLength)"
 }

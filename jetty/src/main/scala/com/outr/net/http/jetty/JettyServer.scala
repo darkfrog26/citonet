@@ -13,7 +13,7 @@ class JettyServer(val application: HttpApplication, port: Int = 8080) extends Lo
   server.setHandler(handler)
 
   application.initialize()
-  info(s"Initialized ${application.getClass} as application for jetty successfully.")
+  info(s"Initialized ${application.getClass} as application for jetty successfully on port $port.")
 
   def start() = {
     server.start()

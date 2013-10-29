@@ -18,4 +18,6 @@ case class FileContent(file: File,
   }
   lazy val contentLength = file.length()
   lazy val lastModified = if (allowCaching) file.lastModified() else -1L
+
+  override def toString = s"FileContent(${file.getAbsolutePath}, contentType: $contentType, contentLength: $contentLength)"
 }

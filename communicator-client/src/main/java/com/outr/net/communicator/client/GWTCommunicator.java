@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.outr.net.communicator.client.connection.ConnectionManager;
 import com.outr.net.communicator.client.connection.Message;
 import com.outr.net.communicator.client.connection.convert.AJAXResponseConverter;
@@ -78,6 +79,12 @@ public class GWTCommunicator implements EntryPoint {
                 notifyHostPage();
             }
         });
+        Window.addWindowClosingHandler(new Window.ClosingHandler() {
+            @Override
+            public void onWindowClosing(Window.ClosingEvent event) {
+                dispose();
+            }
+        });
     }
 
     public void update(int delta) {
@@ -135,6 +142,12 @@ public class GWTCommunicator implements EntryPoint {
         }
         updater.cancel();       // Stop the timer so nothing else happens while we work
         reloadBrowser(force, delay);
+    }
+
+    public void dispose() {
+        updater.cancel();
+        error.dispose();
+        connectionManager.dispose();
     }
 
     public static native void log(String message) /*-{

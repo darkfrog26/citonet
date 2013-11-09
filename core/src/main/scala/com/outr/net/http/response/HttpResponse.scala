@@ -29,4 +29,8 @@ case class HttpResponse(content: HttpContent = null,
     val cookies = this.cookies ++ response.cookies
     HttpResponse(response.content, status, headers, cookies)
   }
+
+  def redirect(url: String, status: HttpResponseStatus = HttpResponseStatus.Found) = {
+    copy(status = status, content = null, headers = headers.Location(url))
+  }
 }

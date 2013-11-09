@@ -17,6 +17,8 @@ public class ErrorDialog {
     private final GQuery div = $(document.createDivElement());
     private final GQuery message = $(document.createDivElement());
 
+    private boolean disposed = false;
+
     public ErrorDialog(GWTCommunicator communicator) {
         this.communicator = communicator;
     }
@@ -45,8 +47,10 @@ public class ErrorDialog {
     }
 
     public void show(String title, String text) {
-        update(title, text);
-        div.removeClass("outrnet_error_hidden");
+        if (!disposed) {
+            update(title, text);
+            div.removeClass("outrnet_error_hidden");
+        }
     }
 
     public void update(int delta) {
@@ -60,5 +64,10 @@ public class ErrorDialog {
         if (!div.hasClass("outrnet_error_hidden")) {
             div.addClass("outrnet_error_hidden");
         }
+    }
+
+    public void dispose() {
+        disposed = true;
+        close();
     }
 }

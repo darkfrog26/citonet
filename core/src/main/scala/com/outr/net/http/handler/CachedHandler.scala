@@ -11,7 +11,7 @@ import org.powerscala.log.Logging
 object CachedHandler extends HandlerListener with Logging {
   def priority = Priority.Lowest    // Should be lowest so content is already set
 
-  def process(request: HttpRequest, response: HttpResponse) = {
+  def onReceive(request: HttpRequest, response: HttpResponse) = {
     val cached = request.headers.IfModifiedSince match {
       case Some(modified) if response.content != null && response.content.lastModified != -1 => {
         modified >= response.content.lastModified

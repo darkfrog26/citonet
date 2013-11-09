@@ -24,6 +24,7 @@ object ContentType {
   lazy val Plain = new ContentType("text/plain")
   lazy val HTML = new ContentType("text/html")
   lazy val JSON = new ContentType("application/json")
+  lazy val CSV = new ContentType("text/csv")
   lazy val MultiPartFormData = new ContentType("multipart/form-data")
 
   def parse(contentTypeString: String) = if (contentTypeString != null) {

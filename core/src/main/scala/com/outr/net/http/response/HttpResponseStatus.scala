@@ -5,7 +5,15 @@ import org.powerscala.enum.{EnumEntry, Enumerated}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class HttpResponseStatus private(val code: Int, val message: String) extends EnumEntry
+class HttpResponseStatus private(val code: Int, val message: String) extends EnumEntry {
+  def isInformation = code >= 100 && code < 200
+  def isSuccess = code >= 200 && code < 300
+  def isRedirection = code >= 300 && code < 400
+  def isClientError = code >= 400 && code < 500
+  def isServerError = code >= 500
+
+  def isError = isClientError || isServerError
+}
 
 object HttpResponseStatus extends Enumerated[HttpResponseStatus] {
   val Continue = new HttpResponseStatus(100, "Continue")

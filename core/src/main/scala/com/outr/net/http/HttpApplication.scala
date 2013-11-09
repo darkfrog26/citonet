@@ -99,6 +99,21 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
       f
     }
   }
+
+  /**
+   * Contextualizes the current thread with an existing context. This can be useful for shared state across more
+   * than one thread.
+   *
+   * @param context the context to assign to the current thread
+   * @param f the function to execute within this context
+   * @tparam T the return type
+   * @return T
+   */
+  def contextualize[T](context: Storage[String, Any])(f: => T) = {
+    stack.context(context) {      // Assign an existing context to this thread
+      f
+    }
+  }
 }
 
 object HttpApplication {

@@ -155,4 +155,7 @@ public class ConnectionManager {
     private void log(String message) {
         GWTCommunicator.log(message);
     }
+
+    public void dispose() {
+    }
 }

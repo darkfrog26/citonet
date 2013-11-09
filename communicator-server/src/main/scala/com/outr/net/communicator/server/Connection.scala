@@ -35,15 +35,18 @@ class Connection(val id: String) extends Listenable with Logging {
    * @param data the data of the message
    * @param highPriority if set to true the message will appear before all standard messages in the queue (default: false)
    */
-  def send(event: String, data: Any = null, highPriority: Boolean = false) = synchronized {
-    val sendId = if (highPriority) -1 else lastSentId.addAndGet(1)
-    val message = Message(sendId, event, data)
-    if (highPriority) {
-      priorityQueue = message :: priorityQueue
-    } else {
-      queue = message :: queue
+  def send(event: String, data: Any = null, highPriority: Boolean = false) = {
+    val m = synchronized {
+      val sendId = if (highPriority) -1 else lastSentId.addAndGet(1)
+      val message = Message(sendId, event, data)
+      if (highPriority) {
+        priorityQueue = message :: priorityQueue
+      } else {
+        queue = message :: queue
+      }
+      message
     }
-    queued.fire(message)
+    queued.fire(m)
   }
 
   def hasMessage = priorityQueue.nonEmpty || queue.nonEmpty

@@ -33,6 +33,7 @@ object PathMappingHandler {
       case Some(handler) => handler
       case None => {
         val handler = new PathMappingHandler
+        Storage.set(application, "pathMappingHandler", handler)
         application.handlers.add(handler)
         handler
       }

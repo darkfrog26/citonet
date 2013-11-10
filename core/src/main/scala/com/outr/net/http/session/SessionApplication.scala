@@ -58,6 +58,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
           createSession(request, id)
         }
       }
+      session.checkIn()     // Keep the session from timing out
       _sessions += session.id -> session
       requestContext("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))

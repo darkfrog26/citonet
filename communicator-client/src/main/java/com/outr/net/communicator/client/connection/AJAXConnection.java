@@ -48,7 +48,7 @@ public class AJAXConnection implements Connection {
                     }
                 }
             } catch(Throwable t) {
-                pollError("Exception thrown on poll receive. Status: " + response.getStatusText() + " (" + response.getStatusCode() + "). Message: " + response.getText(), null);
+                pollError("Exception thrown on poll receive (" + t.getMessage() + "). Status: " + response.getStatusText() + " (" + response.getStatusCode() + "). Message: " + response.getText(), null);
             }
         }
 

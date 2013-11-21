@@ -3,7 +3,7 @@ package com.outr.net.http.request
 import com.outr.net.{IP, Method, URL}
 import com.outr.net.http.Cookie
 import com.outr.net.http.content.{InputStreamContent, HttpContent}
-import org.powerscala.IO
+import org.powerscala.{MapStorage, IO}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -17,6 +17,11 @@ class HttpRequest(val url: URL,
                   val remoteHost: String,
                   val remotePort: Int) {
   def cookie(name: String) = cookies.get(name)
+
+  /**
+   * Allows storage and retrieval of temporary values exclusive to this request.
+   */
+  lazy val store = new MapStorage[String, Any]
 
   lazy val contentString = content match {
     case Some(c) => c match {

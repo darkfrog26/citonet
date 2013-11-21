@@ -42,7 +42,7 @@ trait Session extends Temporal with Listenable with Storage[Any, Any] {
    * @tparam T the type of property to store
    * @return Property[T]
    */
-  def property[T](key: Any, default: T)(implicit manifest: Manifest[T]) = {
+  def property[T](key: Any, default: => T)(implicit manifest: Manifest[T]) = {
     val p = Property[T](default = Option(default))(this, manifest)
     changed.on {
       case evt => if (evt.key == key) {   // Update the property when the key is modified externally

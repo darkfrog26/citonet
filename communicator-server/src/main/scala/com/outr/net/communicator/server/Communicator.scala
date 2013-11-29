@@ -75,7 +75,10 @@ object Communicator extends HttpHandler with Logging with Listenable {
         if (debug()) {
           info(s"Received: [$content]")
         }
-        JSON.parseFull(content).get.asInstanceOf[Map[String, Any]]
+        JSON.parseFull(content) match {
+          case Some(obj) => obj.asInstanceOf[Map[String, Any]]
+          case None => throw new RuntimeException(s"Unable to parse JSON [$content].")
+        }
       }
     }.getOrElse(throw new NullPointerException("HttpRequest sent to Communicator has no POST data."))
 

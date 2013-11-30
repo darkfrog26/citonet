@@ -113,7 +113,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     Time.waitFor(waitForConnectionTime()) {    // Wait for a short period for the connection to be created if it doesn't exist
       connections.contains(id)
     }
-    val connection = connections.getOrElse(id, throw new MessageException(s"Unable to find connection for receive by id: $id", MessageReceiveFailure.ConnectionNotFound))
+    val connection = connections.getOrElse(id, throw new MessageException(s"Unable to find connection for receive by id: $id (URL: ${request.url}, Remote Address: ${request.remoteHost} / ${request.remoteAddress}:${request.remotePort})", MessageReceiveFailure.ConnectionNotFound))
     Time.waitFor(waitForDataTime()) {          // Wait for a message to be ready to send to the client
       connection.heardFrom.fire(System.currentTimeMillis())    // Keep updating the heard from during wait time so the connection doesn't timeout
       connection.hasMessage

@@ -12,8 +12,12 @@ import com.outr.net.http.HttpHandler
 trait LookupHandler extends HttpHandler {
   def lookup(url: URL): Option[HttpContent]
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = lookup(request.url) match {
-    case Some(content) => response.copy(content = content, status = HttpResponseStatus.OK)
-    case None => response
+  def onReceive(request: HttpRequest, response: HttpResponse) = if (response.status == HttpResponseStatus.NotFound) {
+    lookup(request.url) match {
+      case Some(content) => response.copy(content = content, status = HttpResponseStatus.OK)
+      case None => response
+    }
+  } else {
+    response
   }
 }

@@ -12,11 +12,14 @@ import com.outr.net.http.content.InputStreamContent
 import scala.Some
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.StringContent
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ServletConversion {
+object ServletConversion extends Logging {
+  val IgnoredHeaders = List("Content-Encoding", "Content-Length")
+
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
     val params = HttpParameters(servletRequest.getParameterMap.collect {
@@ -44,7 +47,9 @@ object ServletConversion {
               gzip: Boolean) = {
     servletResponse.setStatus(response.status.code)
     response.headers.values.foreach {
-      case (key, value) => servletResponse.setHeader(key, value)
+      case (key, value) => if (!IgnoredHeaders.contains(key)) {
+        servletResponse.setHeader(key, value)
+      }
     }
     response.cookies.foreach {
       case cookie => {
@@ -85,6 +90,7 @@ object ServletConversion {
           ArrayBufferPool.use() {
             case buf => IO.stream(input, output, buf, closeOnComplete = true)
           }
+          outputStream.close()
         }
         case content: StreamingContent => {
           try {

@@ -6,7 +6,7 @@ import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.0.1-SNAPSHOT",
+    version := "1.0.2-SNAPSHOT",
     organization := "com.outr.net",
     scalaVersion := "2.10.3",
     libraryDependencies ++= Seq(
@@ -33,9 +33,9 @@ object OUTRNetBuild extends Build {
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
-    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.Specs2))
+    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.ApacheHttpClient, Dependencies.Specs2))
 
-  // HTTP Implementations
+  // HTTP Server Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Netty))
@@ -62,7 +62,7 @@ object OUTRNetBuild extends Build {
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, servlet, communicatorServer, jetty)
+    .dependsOn(core, servlet, communicatorServer, proxy, jetty)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
     .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
@@ -72,6 +72,7 @@ object Dependencies {
   private val JettyVersion = "9.0.6.v20130930"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
+  val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.1"
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
   val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3"

@@ -6,6 +6,7 @@ import com.outr.net.URL
 /**
  * @author Matt Hicks <matt@outr.com>
  */
+@deprecated("Use ProxyHandler instead.", "1.0.2")
 class ProxyMapping {
   private var hostMapping = Map.empty[String, URL]
   private var hostPortMapping = Map.empty[String, URL]

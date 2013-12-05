@@ -1,6 +1,6 @@
 package com.outr.net.http.request
 
-import com.outr.net.http.{HttpApplication, HttpHeaders}
+import com.outr.net.http.{Cookie, HttpApplication, HttpHeaders}
 import org.powerscala.log.Logging
 
 /**
@@ -10,6 +10,27 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   lazy val IfModifiedSince = date("If-Modified-Since")
   lazy val AcceptEncoding = values.get("Accept-Encoding")
   lazy val UserAgent = values.get("User-Agent")
+
+  def parseCookies() = {
+    values.get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
+      case Some(c) => c
+      case None => Map.empty[String, Cookie]
+    }
+  }
+
+  private def parseCookie(s: String) = {
+    val splitPoint = s.indexOf('=')
+    val name = s.substring(0, splitPoint).trim
+    val value = s.substring(splitPoint + 1).trim match {
+      case v if v.startsWith("\"") && v.endsWith("\"") => unescape(v.substring(1, v.length - 1))
+      case v => v
+    }
+    name -> Cookie(name = name, value = value)
+  }
+
+  private def unescape(s: String) = {   // TODO: make this work a lot better
+    s.replaceAll("""\\"""", "\"")
+  }
 
   def gzipSupport = AcceptEncoding match {
     case Some(encoding) if encoding != null => encoding.contains("gzip")

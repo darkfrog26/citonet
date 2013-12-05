@@ -74,4 +74,7 @@ object HttpResponseStatus extends Enumerated[HttpResponseStatus] {
   val InsufficientStorage = new HttpResponseStatus(507, "Insufficient Storage")
   val NotExtended = new HttpResponseStatus(510, "Not Extended")
   val NetworkAuthenticationRequired = new HttpResponseStatus(511, "Network Authentication Required")
+
+  def getByCode(code: Int) = values.find(s => s.code == code)
+  def byCode(code: Int) = getByCode(code).getOrElse(throw new RuntimeException(s"Unable to find HttpResponseStatus by code: $code"))
 }

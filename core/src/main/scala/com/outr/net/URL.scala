@@ -66,6 +66,8 @@ object URL {
   val URLParser2 = """([a-zA-Z0-9:]+:)(/.+)([?].*)?""".r
   val URLParser3 = """([\p{Alnum}-.]*):?(\d*)(/.*?)?([?].*)?""".r
 
+  def apply(url: String): URL = parse(url).getOrElse(throw new RuntimeException(s"Unable to parse URL: $url"))
+
   def apply(url: net.URL): URL = if (url != null) {
     parse(url.toString).getOrElse(throw new RuntimeException(s"Unable to parse java.net.URL($url) to com.outr.net.URL."))
   } else {

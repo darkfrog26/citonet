@@ -11,6 +11,7 @@ import com.outr.net.{ArrayBufferPool, Protocol, URL}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
+@deprecated("Use ProxyHandler instead.", "1.0.2")
 class ProxyServer(val port: Int,
                   val hostname: String = null,
                   val backlog: Int = 0,
@@ -82,6 +83,7 @@ class ProxyServer(val port: Int,
   }
 }
 
+@deprecated("Use ProxyHandler instead.", "1.0.2")
 object ProxyServer extends Logging {
   def load(file: File) = {
     if (!file.exists()) {

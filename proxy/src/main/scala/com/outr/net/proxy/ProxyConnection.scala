@@ -12,6 +12,7 @@ import scala.Some
 /**
  * @author Matt Hicks <matt@outr.com>
  */
+@deprecated("Use ProxyHandler instead.", "1.0.2")
 class ProxyConnection(server: ProxyServer, socket: Socket, protocol: Protocol) extends Logging {
   private val input = socket.getInputStream
   private val output = socket.getOutputStream
@@ -119,6 +120,7 @@ class ProxyConnection(server: ProxyServer, socket: Socket, protocol: Protocol) e
   }
 }
 
+@deprecated("Use ProxyHandler instead.", "1.0.2")
 object ProxyConnection {
   private val RequestLineRegexWithParameters = """([a-zA-Z]+) (.*)\?(.+) HTTP/1.1""".r
   private val RequestLineRegex = """([a-zA-Z]+) (.*) HTTP/1.1""".r

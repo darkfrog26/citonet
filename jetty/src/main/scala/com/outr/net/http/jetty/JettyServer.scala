@@ -20,8 +20,8 @@ class JettyServer(val application: HttpApplication, port: Int = 8080) extends Lo
   }
 
   def dispose() = {
+    server.stop()
     server.destroy()
-    application.dispose()
   }
 }
 

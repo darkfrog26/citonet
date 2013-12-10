@@ -11,22 +11,26 @@ import java.util.concurrent.ScheduledFuture
 import org.powerscala.concurrent.Time._
 import org.powerscala.event.processor.UnitProcessor
 import java.util.concurrent.atomic.AtomicReference
+import org.powerscala.process.classloader.ClassLoaderProcess
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable {
+trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable with ClassLoaderProcess {
+  // TODO: support using HttpApplication as a HttpHandler abstractly
   HttpApplication.current = this
 
   private val stack = new LocalStack[Storage[String, Any]]
   def requestContext = stack.get().getOrElse(throw new RuntimeException("RequestContext is not set for the current thread!"))
 
   @volatile private var _initialized = false
+  @volatile private var running = false
   @volatile private var _updater: ScheduledFuture[_] = _
 
   val disposed = new UnitProcessor[HttpApplication]("disposed")
 
   def initialized = _initialized
+  def isRunning = running
 
   /**
    * The frequency the application will be updated in seconds.
@@ -53,6 +57,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
         previous = current
       }
       _initialized = true
+      running = true
     }
   }
 
@@ -68,6 +73,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
     _updater.cancel(false)
 
     disposed.fire(this)
+    running = false
   }
 
   protected def processRequest(request: HttpRequest, response: HttpResponse) = {

@@ -10,8 +10,7 @@ object OUTRNetBuild extends Build {
     organization := "com.outr.net",
     scalaVersion := "2.10.3",
     libraryDependencies ++= Seq(
-      Dependencies.PowerScalaProperty,
-      Dependencies.PowerScalaProcess
+      Dependencies.PowerScalaProperty
     ),
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
     resolvers ++= Seq("Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
@@ -73,7 +72,6 @@ object Dependencies {
   private val JettyVersion = "9.0.6.v20130930"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
-  val PowerScalaProcess = "org.powerscala" %% "powerscala-process" % PowerScalaVersion
   val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.1"
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
   val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"

@@ -11,12 +11,11 @@ import java.util.concurrent.ScheduledFuture
 import org.powerscala.concurrent.Time._
 import org.powerscala.event.processor.UnitProcessor
 import java.util.concurrent.atomic.AtomicReference
-import org.powerscala.process.classloader.ClassLoaderProcess
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable with ClassLoaderProcess {
+trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable {
   // TODO: support using HttpApplication as a HttpHandler abstractly
   HttpApplication.current = this
 

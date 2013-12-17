@@ -27,7 +27,8 @@ object ServletConversion extends Logging {
     }.toMap)
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
     val method = Method(servletRequest.getMethod)
-    val headers = servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap
+    val headers = HttpRequestHeaders(servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap)
+    val cookies = headers.parseCookies()
     val contentType = ContentType.parse(servletRequest.getContentType)
     val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
       Some(InputStreamContent(servletRequest.getInputStream, contentType, servletRequest.getContentLength, lastModified = -1L))
@@ -37,7 +38,16 @@ object ServletConversion extends Logging {
     val remoteAddress = IP(servletRequest.getRemoteAddr)
     val remoteHost = servletRequest.getRemoteHost
     val remotePort = servletRequest.getRemotePort
-    val request = HttpRequest(url, method, HttpRequestHeaders(headers), content = content, remoteAddress = remoteAddress, remoteHost = remoteHost, remotePort = remotePort)
+    val request = HttpRequest(
+      url = url,
+      method = method,
+      headers = headers,
+      cookies = cookies,
+      content = content,
+      remoteAddress = remoteAddress,
+      remoteHost = remoteHost,
+      remotePort = remotePort
+    )
     request
   }
 

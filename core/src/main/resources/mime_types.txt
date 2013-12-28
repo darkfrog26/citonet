@@ -555,6 +555,7 @@ application/vnd.mfer				mwf
 application/vnd.mfmp				mfm
 application/vnd.micrografx.flo			flo
 application/vnd.micrografx.igx			igx
+image/x-win-bitmap                  cur cursor
 application/vnd.mif				mif
 # application/vnd.minisoft-hp3000-save
 # application/vnd.mitsubishi.misty-guard.trustweb

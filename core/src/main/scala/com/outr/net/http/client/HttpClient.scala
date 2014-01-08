@@ -65,7 +65,9 @@ object HttpClient extends HttpClient {
       }
     }
     request.headers.values.foreach {
-      case (key, value) => clientRequest.setHeader(key, value)
+      case (key, value) => if (key != "Content-Length") {   // Content-Length is special and is set above if set
+        clientRequest.setHeader(key, value)
+      }
     }
     // Process response
     val clientResponse = client.execute(clientRequest)

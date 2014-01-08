@@ -3,7 +3,7 @@ package com.outr.net.http.handler
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.HttpHandler
 import org.powerscala.Storage
-import com.outr.net.http.response.HttpResponse
+import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -11,9 +11,13 @@ import com.outr.net.http.response.HttpResponse
 private class PathMappingHandler extends HttpHandler {
   private var map = Map.empty[String, HttpHandler]
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = map.get(request.url.path) match {
-    case Some(handler) => handler.onReceive(request, response)
-    case None => response
+  def onReceive(request: HttpRequest, response: HttpResponse) = if (response.status == HttpResponseStatus.NotFound) {
+    map.get(request.url.path) match {
+      case Some(handler) => handler.onReceive(request, response)
+      case None => response
+    }
+  } else {
+    response
   }
 }
 

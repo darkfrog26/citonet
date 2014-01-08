@@ -69,7 +69,7 @@ object Communicator extends HttpHandler with Logging with Listenable {
     }
   }
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = {
+  def onReceive(request: HttpRequest, response: HttpResponse) = if (response.status == HttpResponseStatus.NotFound) {
     val data = request.contentString.map {
       case content => {
         if (debug()) {
@@ -106,6 +106,8 @@ object Communicator extends HttpHandler with Logging with Listenable {
       info(s"Response: [$json]")
     }
     response.copy(content = StringContent(json, ContentType.JSON), status = HttpResponseStatus.OK)
+  } else {
+    response
   }
 
   private def receive(request: HttpRequest, id: String, lastReceiveId: Int) = {

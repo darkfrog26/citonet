@@ -13,6 +13,8 @@ class HttpResponseStatus private(val code: Int, val message: String) extends Enu
   def isServerError = code >= 500
 
   def isError = isClientError || isServerError
+
+  def apply(message: String) = new HttpResponseStatus(code, message)
 }
 
 object HttpResponseStatus extends Enumerated[HttpResponseStatus] {

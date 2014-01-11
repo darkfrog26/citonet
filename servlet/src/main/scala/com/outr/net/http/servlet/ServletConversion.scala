@@ -22,6 +22,12 @@ object ServletConversion extends Logging {
 
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
+    val contentType = ContentType.parse(servletRequest.getContentType)
+    val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
+      Some(InputStreamContent(servletRequest.getInputStream, contentType, servletRequest.getContentLength, lastModified = -1L))
+    } else {
+      None
+    }
     val params = HttpParameters(servletRequest.getParameterMap.collect {
       case (name, values) => name -> values.toList
     }.toMap)
@@ -29,12 +35,6 @@ object ServletConversion extends Logging {
     val method = Method(servletRequest.getMethod)
     val headers = HttpRequestHeaders(servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap)
     val cookies = headers.parseCookies()
-    val contentType = ContentType.parse(servletRequest.getContentType)
-    val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
-      Some(InputStreamContent(servletRequest.getInputStream, contentType, servletRequest.getContentLength, lastModified = -1L))
-    } else {
-      None
-    }
     val remoteAddress = IP(servletRequest.getRemoteAddr)
     val remoteHost = servletRequest.getRemoteHost
     val remotePort = servletRequest.getRemotePort

@@ -17,6 +17,8 @@ case class HttpParameters(values: Map[String, List[String]] = Map.empty) {
   def apply(name: String) = get(name).getOrElse(throw new NullPointerException(s"No parameter found for: $name in $values"))
 
   def first(name: String) = apply(name).head
+
+  def contains(name: String) = values.contains(name)
 }
 
 object HttpParameters {

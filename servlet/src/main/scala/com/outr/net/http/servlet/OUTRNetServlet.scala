@@ -47,29 +47,31 @@ class OUTRNetServlet extends HttpServlet with Logging {
 
 object OUTRNetServlet extends Logging {
   def handle(application: HttpApplication, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
-    val request = try {
-      ServletConversion.convert(servletRequest)
-    } catch {
-      case t: Throwable => {
-        error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
-        throw t
-      }
-    }
-    try {
-      debug(s"Request: $request")
-      application.receiveContextualized(request) {
-        case response => {
-          val gzip = request.headers.gzipSupport
-          ServletConversion.convert(request, response, servletResponse, gzip)
+    application.around {
+      val request = try {
+        ServletConversion.convert(servletRequest)
+      } catch {
+        case t: Throwable => {
+          error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
+          throw t
         }
       }
-    } catch {
-      case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {
-        warn(s"End of File exception occurred for: ${request.url}", t)
-      }
-      case t: Throwable => {
-        error(s"Error occurred on ${request.url} - ${t.getClass.getName}.", t)
-        throw t
+      try {
+        debug(s"Request: $request")
+        application.receiveContextualized(request) {
+          case response => {
+            val gzip = request.headers.gzipSupport
+            ServletConversion.convert(request, response, servletResponse, gzip)
+          }
+        }
+      } catch {
+        case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {
+          warn(s"End of File exception occurred for: ${request.url}", t)
+        }
+        case t: Throwable => {
+          error(s"Error occurred on ${request.url} - ${t.getClass.getName}.", t)
+          throw t
+        }
       }
     }
   }

@@ -12,6 +12,7 @@ object OUTRNetBuild extends Build {
     libraryDependencies ++= Seq(
       Dependencies.PowerScalaProperty
     ),
+    fork := true,
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
     resolvers ++= Seq("Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
     publishTo <<= version {

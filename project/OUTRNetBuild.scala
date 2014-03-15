@@ -1,12 +1,11 @@
 import sbt._
 import Keys._
 
-import net.thunderklaus.GwtPlugin._
 import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.0.2",
+    version := "1.0.3-SNAPSHOT",
     organization := "com.outr.net",
     scalaVersion := "2.10.3",
     libraryDependencies ++= Seq(
@@ -23,14 +22,34 @@ object OUTRNetBuild extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
-    publishArtifact in Test := false
+    publishArtifact in Test := false,
+    pomExtra := <url>http://powerscala.org</url>
+      <licenses>
+        <license>
+          <name>BSD-style</name>
+          <url>http://www.opensource.org/licenses/bsd-license.php</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <developerConnection>scm:https://github.com/darkfrog26/outrnet.git</developerConnection>
+        <connection>scm:https://github.com/darkfrog26/outrnet.git</connection>
+        <url>https://github.com/darkfrog26/outrnet</url>
+      </scm>
+      <developers>
+        <developer>
+          <id>darkfrog</id>
+          <name>Matt Hicks</name>
+          <url>http://matthicks.com</url>
+        </developer>
+      </developers>
   )
 
   private def createSettings(_name: String) = baseSettings ++ Seq(name := _name)
 
   // Aggregator
   lazy val root = Project("root", file("."), settings = createSettings("outrnet"))
-    .aggregate(core, netty, servlet, jetty, communicatorClient, communicatorServer, proxy)
+    .aggregate(core, netty, servlet, jetty, proxy)
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
@@ -47,29 +66,19 @@ object OUTRNetBuild extends Build {
     .dependsOn(servlet)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyServer))
 
-  // Communicator
-  lazy val communicatorClient = Project("communicator-client", file("communicator-client"), settings = createSettings("outrnet-communicator-client") ++ gwtSettings)
-    .settings(libraryDependencies ++= Seq(Dependencies.GWTQuery, Dependencies.JettyWebapp))
-    .settings(gwtTemporaryPath <<= classDirectory in Compile, gwtVersion := "2.6.0-rc1")
-    .settings(publishArtifact in (Compile, packageBin) := true)
-    .settings(publishArtifact in packageDoc := false)
-  lazy val communicatorServer = Project("communicator-server", file("communicator-server"), settings = createSettings("outrnet-communicator-server"))
-    .dependsOn(communicatorClient, core)
-    .settings(compile in Compile <<= (compile in Compile) dependsOn(gwtCompile in (communicatorClient, Gwt)))
-
   // Proxy
   lazy val proxy = Project("proxy", file("proxy"), settings = createSettings("outrnet-proxy"))
     .dependsOn(core)
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, servlet, communicatorServer, proxy, jetty)
+    .dependsOn(core, servlet, proxy, jetty)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
     .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
 
 object Dependencies {
-  private val PowerScalaVersion = "1.6.3"
+  private val PowerScalaVersion = "1.6.4-SNAPSHOT"
   private val JettyVersion = "9.0.6.v20130930"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion

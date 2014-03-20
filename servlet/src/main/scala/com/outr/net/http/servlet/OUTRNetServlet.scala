@@ -66,7 +66,7 @@ object OUTRNetServlet extends Logging {
         }
       } catch {
         case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {
-          warn(s"End of File exception occurred for: ${request.url}", t)
+          warn(s"End of File exception occurred for: ${request.url}")
         }
         case t: Throwable => {
           error(s"Error occurred on ${request.url} - ${t.getClass.getName}.", t)

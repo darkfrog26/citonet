@@ -83,7 +83,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
     processRequest(request, HttpResponse(status = HttpResponseStatus.NotFound))
   }
 
-  final def receiveContextualized(request: HttpRequest)(responseHandler: HttpResponse => Unit) = contextualize(request) {
+  final def receiveContextualized[R](request: HttpRequest)(responseHandler: HttpResponse => R): R = contextualize(request) {
     val response = receive(request)
     responseHandler(response)
   }
@@ -125,7 +125,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    *
    * @param f the function to manage the request / response process.
    */
-  def around(f: => Unit): Unit = f
+  def around[R](f: => R): R = f
 }
 
 object HttpApplication {

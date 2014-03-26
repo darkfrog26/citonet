@@ -3,7 +3,6 @@ package com.outr.net.http.filter
 import com.outr.net.http.HttpHandler
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.HttpResponse
-import com.outr.net.http.handler.HandlerApplication
 
 /**
  * Allows specifying a base-path to direct traffic to another handler.
@@ -20,12 +19,5 @@ case class PathFilter(path: String, handler: HttpHandler, removePath: Boolean = 
     request
   }
 
-  override def handle(request: HttpRequest, response: HttpResponse) = handler match {
-    case application: HandlerApplication => application.around {
-      application.receiveContextualized(request) {
-        case r => r
-      }
-    }
-    case _ => handler.onReceive(request, response)
-  }
+  override def handle(request: HttpRequest, response: HttpResponse) = handler.onReceive(request, response)
 }

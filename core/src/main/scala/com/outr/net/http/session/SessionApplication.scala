@@ -1,6 +1,6 @@
 package com.outr.net.http.session
 
-import com.outr.net.http.{Cookie, HttpHandler, HttpApplication}
+import com.outr.net.http.{Cookie, HttpHandler}
 import com.outr.net.http.request.HttpRequest
 import org.powerscala.{Priority, Unique}
 import com.outr.net.http.response.HttpResponse
@@ -16,7 +16,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
   private var _sessions = Map.empty[String, S]
   lazy val sessions = new Sessions
 
-  def session = requestContext[S]("session")
+  def session = request.store[S]("session")
 
   handlers.add(new SessionCreateHandler, Priority.Critical)      // Add a handler to set the session (critical priority)
 
@@ -60,7 +60,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       }
       session.checkIn()     // Keep the session from timing out
       _sessions += session.id -> session
-      requestContext("session") = session
+      request.store("session") = session
       response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
     }
   }
@@ -76,8 +76,4 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       }
     }
   }
-}
-
-object SessionApplication {
-  def apply[S <: Session]() = HttpApplication[SessionApplication[S]]()
 }

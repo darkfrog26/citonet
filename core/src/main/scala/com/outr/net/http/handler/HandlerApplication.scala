@@ -11,8 +11,8 @@ import org.powerscala.log.Logging
 trait HandlerApplication extends HttpApplication with Logging {
   val handlers = new HandlerProcessor()
 
-  override protected def processRequest(request: HttpRequest, response: HttpResponse) = {
-    handlers.fire(request -> response)
-//    super.processRequest(request, response)
+  override def onReceive(request: HttpRequest, response: HttpResponse) = contextualize(request) {
+    val updated = handlers.fire(request -> response)
+    super.onReceive(request, updated)
   }
 }

@@ -5,6 +5,7 @@ import javax.servlet.ServletConfig
 import org.powerscala.reflect.EnhancedClass
 import com.outr.net.http.HttpApplication
 import org.powerscala.log.{Level, Logging}
+import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -26,7 +27,6 @@ class OUTRNetServlet extends HttpServlet with Logging {
   }
 
   override def destroy() = {
-    HttpApplication.current = application
     try {
       application.dispose()
     } catch {
@@ -58,11 +58,10 @@ object OUTRNetServlet extends Logging {
       }
       try {
         debug(s"Request: $request")
-        application.receiveContextualized(request) {
-          case response => {
-            val gzip = request.headers.gzipSupport
-            ServletConversion.convert(request, response, servletResponse, gzip)
-          }
+        application.contextualize(request) {
+          val response = application.onReceive(request, HttpResponse(status = HttpResponseStatus.NotFound))
+          val gzip = request.headers.gzipSupport
+          ServletConversion.convert(request, response, servletResponse, gzip)
         }
       } catch {
         case t: Throwable if t.getClass.getName == "org.eclipse.jetty.io.EofException" => {

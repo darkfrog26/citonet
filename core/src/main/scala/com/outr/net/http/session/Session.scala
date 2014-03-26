@@ -12,6 +12,7 @@ import org.powerscala.event.processor.UnitProcessor
  */
 trait Session extends Temporal with Listenable with Storage[Any, Any] {
   def id: String
+  def application: SessionApplication[_]
 
   /**
    * Fired when a session value changes in this session.
@@ -58,6 +59,6 @@ trait Session extends Temporal with Listenable with Storage[Any, Any] {
   def dispose() = {
     clear()
 
-    SessionApplication[Session]().remove(id)
+    application.remove(id)
   }
 }

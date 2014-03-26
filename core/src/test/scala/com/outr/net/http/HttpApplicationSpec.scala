@@ -11,11 +11,11 @@ import com.outr.net.URL
 class HttpApplicationSpec extends Specification {
   "TestHttpApplication" should {
     "receive OK for test.html" in {
-      val response = TestHttpApplication.receive(HttpRequest(URL.parse("http://localhost/test.html").get))
+      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/test.html").get), HttpResponse.NotFound)
       response.status must be(HttpResponseStatus.OK)
     }
     "receive NotFound for other.html" in {
-      val response = TestHttpApplication.receive(HttpRequest(URL.parse("http://localhost/other.html").get))
+      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/other.html").get), HttpResponse.NotFound)
       response.status must be(HttpResponseStatus.NotFound)
     }
   }
@@ -24,7 +24,7 @@ class HttpApplicationSpec extends Specification {
 object TestHttpApplication extends HttpApplication {
   protected def init() = {}
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = {
+  override def onReceive(request: HttpRequest, response: HttpResponse) = {
     if (request.url.path == "/test.html") {
       response.copy(status = HttpResponseStatus.OK)
     } else {

@@ -10,8 +10,11 @@ import com.outr.net.http.content.HttpContent
 trait NotFoundApplication extends HttpApplication {
   protected def notFoundContent(request: HttpRequest): HttpContent
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = response.status match {
-    case HttpResponseStatus.NotFound if response.content == null => response.copy(content = notFoundContent(request))
-    case _ => response
+  override def onReceive(request: HttpRequest, response: HttpResponse) = {
+    val updated = super.onReceive(request, response)
+    updated.status match {
+      case HttpResponseStatus.NotFound if updated.content == null => response.copy(content = notFoundContent(request))
+      case _ => updated
+    }
   }
 }

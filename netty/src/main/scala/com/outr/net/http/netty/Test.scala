@@ -12,7 +12,7 @@ import com.outr.net.http.content.URLContent
 object Test extends HttpApplication {
   def init() = {}
 
-  def onReceive(request: HttpRequest, response: HttpResponse) = {
+  override def onReceive(request: HttpRequest, response: HttpResponse) = {
     println(s"URL: ${request.url.breakDown}, Headers: ${request.headers}")
     response.copy(content = URLContent(URL.lookupResource("test.html")))
   }

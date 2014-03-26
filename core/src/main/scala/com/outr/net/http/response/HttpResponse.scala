@@ -34,3 +34,7 @@ case class HttpResponse(content: HttpContent = null,
     copy(status = status, content = null, headers = headers.Location(url))
   }
 }
+
+object HttpResponse {
+  lazy val NotFound = HttpResponse(status = HttpResponseStatus.NotFound)
+}

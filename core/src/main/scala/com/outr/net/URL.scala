@@ -1,6 +1,6 @@
 package com.outr.net
 
-import java.net.{URLEncoder, URLDecoder}
+import java.net.URLEncoder
 import java.net
 import org.powerscala.IO
 import com.outr.net.http.HttpParameters
@@ -87,26 +87,8 @@ object URL {
         case null => "/"
         case p => p
       }
-      var parameters = Map.empty[String, List[String]]
-      if (_parameters != null && _parameters.length > 1) {
-        _parameters.substring(1).split('&').foreach {
-          case entry => {
-            val split = entry.indexOf('=')
-            val (key, value) = if (split == -1) {
-              URLDecoder.decode(entry, "utf-8") -> null
-            } else {
-              URLDecoder.decode(entry.substring(0, split), "utf-8") -> URLDecoder.decode(entry.substring(split + 1), "utf-8")
-            }
-            val entries = parameters.getOrElse(key, Nil)
-            if (value == null) {
-              parameters += key -> entries
-            } else {
-              parameters += key -> (value :: entries.reverse).reverse
-            }
-          }
-        }
-      }
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = HttpParameters(parameters)))
+      val parameters = HttpParameters.parse(_parameters)
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
     }
     case URLParser2(_protocol, _path, _parameters) => {
       val protocol = _protocol match {
@@ -117,26 +99,8 @@ object URL {
         case null => "/"
         case p => p
       }
-      var parameters = Map.empty[String, List[String]]
-      if (_parameters != null && _parameters.length > 1) {
-        _parameters.substring(1).split('&').foreach {
-          case entry => {
-            val split = entry.indexOf('=')
-            val (key, value) = if (split == -1) {
-              URLDecoder.decode(entry, "utf-8") -> null
-            } else {
-              URLDecoder.decode(entry.substring(0, split), "utf-8") -> URLDecoder.decode(entry.substring(split + 1), "utf-8")
-            }
-            val entries = parameters.getOrElse(key, Nil)
-            if (value == null) {
-              parameters += key -> entries
-            } else {
-              parameters += key -> (value :: entries.reverse).reverse
-            }
-          }
-        }
-      }
-      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = HttpParameters(parameters)))
+      val parameters = HttpParameters.parse(_parameters)
+      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters))
     }
     case URLParser3(host, _port, _path, _parameters) => {
       val protocol = Protocol.Http
@@ -148,26 +112,8 @@ object URL {
         case null => "/"
         case p => p
       }
-      var parameters = Map.empty[String, List[String]]
-      if (_parameters != null && _parameters.length > 1) {
-        _parameters.substring(1).split('&').foreach {
-          case entry => {
-            val split = entry.indexOf('=')
-            val (key, value) = if (split == -1) {
-              URLDecoder.decode(entry, "utf-8") -> null
-            } else {
-              URLDecoder.decode(entry.substring(0, split), "utf-8") -> URLDecoder.decode(entry.substring(split + 1), "utf-8")
-            }
-            val entries = parameters.getOrElse(key, Nil)
-            if (value == null) {
-              parameters += key -> entries
-            } else {
-              parameters += key -> (value :: entries.reverse).reverse
-            }
-          }
-        }
-      }
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = HttpParameters(parameters)))
+      val parameters = HttpParameters.parse(_parameters)
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
     }
     case _ => None
   }

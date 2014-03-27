@@ -2,7 +2,7 @@ package com.outr.net.http.request
 
 import com.outr.net.{IP, Method, URL}
 import com.outr.net.http.Cookie
-import com.outr.net.http.content.{InputStreamContent, HttpContent}
+import com.outr.net.http.content.{FormPostContent, InputStreamContent, HttpContent}
 import org.powerscala.{MapStorage, IO}
 
 /**
@@ -26,6 +26,7 @@ case class HttpRequest(url: URL,
   lazy val contentString = content match {
     case Some(c) => c match {
       case isc: InputStreamContent => Some(IO.copy(isc.input))
+      case fpc: FormPostContent => Some(fpc.contentString)
     }
     case None => None
   }

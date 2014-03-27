@@ -48,7 +48,13 @@ object ServletConversion extends Logging {
       remoteHost = remoteHost,
       remotePort = remotePort
     )
-    request
+    // Special handling for FORM post data
+    if (method == Method.Post && contentType == ContentType.FormURLEncoded && content.nonEmpty) {
+      val contentString = request.contentString.get
+      request.copy(content = Some(FormPostContent(contentString)))
+    } else {
+      request
+    }
   }
 
   def convert(request: HttpRequest,

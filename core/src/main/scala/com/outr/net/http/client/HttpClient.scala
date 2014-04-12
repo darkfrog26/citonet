@@ -4,7 +4,7 @@ import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseHeaders, HttpResponseStatus, HttpResponse}
 import org.apache.http.client.methods.{HttpPost, HttpGet}
 import com.outr.net.{URL, Method}
-import org.apache.http.impl.client.{BasicCookieStore, HttpClients}
+import org.apache.http.impl.client.{CloseableHttpClient, BasicCookieStore, HttpClients}
 import org.apache.http.impl.cookie.BasicClientCookie
 import org.powerscala.concurrent.Time
 import java.util.Date
@@ -14,6 +14,7 @@ import scala.collection.JavaConversions._
 import com.outr.net.http.Cookie
 import org.powerscala.IO
 import org.apache.http.entity.{ContentType => ApacheContentType}
+import java.io.InputStream
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -73,7 +74,7 @@ object HttpClient extends HttpClient {
     val clientResponse = client.execute(clientRequest)
     val content = clientResponse.getEntity match {
       case null => null
-      case r: HttpEntityWrapper => InputStreamContent(r.getContent, ContentType.parse(r.getContentType.getValue), r.getContentLength, System.currentTimeMillis())
+      case r: HttpEntityWrapper => InputStreamContent(HttpClientInputStream(client, r.getContent), ContentType.parse(r.getContentType.getValue), r.getContentLength, System.currentTimeMillis())
     }
     val status = HttpResponseStatus.byCode(clientResponse.getStatusLine.getStatusCode)
     val headers = HttpResponseHeaders(clientResponse.getAllHeaders.map(h => h.getName -> h.getValue).toMap)
@@ -97,4 +98,27 @@ object HttpClient extends HttpClient {
     }.toSet
     HttpResponse(content, status, headers, cookies)
   }
+}
+
+case class HttpClientInputStream(client: CloseableHttpClient, wrapped: InputStream) extends InputStream {
+  override def markSupported() = wrapped.markSupported()
+
+  override def reset() = wrapped.reset()
+
+  override def mark(readlimit: Int) = wrapped.mark(readlimit)
+
+  override def close() = {
+    wrapped.close()
+    client.close()    // Make sure the HttpClient gets closed
+  }
+
+  override def available() = wrapped.available()
+
+  override def skip(n: Long) = wrapped.skip(n)
+
+  override def read(b: Array[Byte], off: Int, len: Int) = wrapped.read(b, off, len)
+
+  override def read(b: Array[Byte]) = wrapped.read(b)
+
+  override def read() = wrapped.read()
 }

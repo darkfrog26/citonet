@@ -7,9 +7,9 @@ import org.powerscala.log.Logging
  * @author Matt Hicks <matt@outr.com>
  */
 case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders with Logging {
-  lazy val IfModifiedSince = date("If-Modified-Since")
-  lazy val AcceptEncoding = values.get("Accept-Encoding")
-  lazy val UserAgent = values.get("User-Agent")
+  lazy val IfModifiedSince = date(HttpRequestHeaders.IfModifiedSince)
+  lazy val AcceptEncoding = values.get(HttpRequestHeaders.AcceptEncoding)
+  lazy val UserAgent = values.get(HttpRequestHeaders.UserAgent)
 
   def parseCookies() = {
     values.get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
@@ -48,8 +48,17 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
     }
     case _ => None
   }
+
+  def list(key: String) = get(key).map(s => s.split(',').map(_.trim).toList)
 }
 
 object HttpRequestHeaders {
   lazy val Empty = HttpRequestHeaders(Map.empty)
+
+  val IfModifiedSince = "If-Modified-Since"
+  val AcceptEncoding = "Accept-Encoding"
+  val UserAgent = "User-Agent"
+  val ForwardedFor = "X-Forwarded-For"
+  val ForwardedForHost = "X-Forwarded-For-Host"
+  val ForwardedForPort = "X-Forwarded-For-Port"
 }

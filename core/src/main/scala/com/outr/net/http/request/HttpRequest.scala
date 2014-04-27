@@ -17,6 +17,7 @@ case class HttpRequest(url: URL,
                        remoteHost: String = "localhost",
                        remotePort: Int = -1) {
   def cookie(name: String) = cookies.get(name)
+  def header(key: String, value: String) = copy(headers = headers.copy(values = headers.values + (key -> value)))
 
   /**
    * Allows storage and retrieval of temporary values exclusive to this request.
@@ -29,6 +30,30 @@ case class HttpRequest(url: URL,
       case fpc: FormPostContent => Some(fpc.contentString)
     }
     case None => None
+  }
+
+  /**
+   * The originating remoteAddress specified by proxy or the current value of the remoteAddress.
+   */
+  lazy val derivedRemoteAddress = headers.list(HttpRequestHeaders.ForwardedFor) match {
+    case Some(list) => IP(list.head)
+    case None => remoteAddress
+  }
+
+  /**
+   * The originating remoteHost specified by proxy or the current value of the remoteHost.
+   */
+  lazy val derivedRemoteHost = headers.list(HttpRequestHeaders.ForwardedForHost) match {
+    case Some(list) => list.head
+    case None => remoteHost
+  }
+
+  /**
+   * The originating remotePort specified by proxy or the current value of the remotePort.
+   */
+  lazy val derivedRemotePort = headers.list(HttpRequestHeaders.ForwardedForPort) match {
+    case Some(list) => list.head.toInt
+    case None => remotePort
   }
 
   override def toString = s"$url ($method)"

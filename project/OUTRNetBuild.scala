@@ -78,14 +78,14 @@ object OUTRNetBuild extends Build {
 }
 
 object Dependencies {
-  private val PowerScalaVersion = "1.6.4-SNAPSHOT"
-  private val JettyVersion = "9.0.6.v20130930"
+  private val PowerScalaVersion = "latest.integration"
+  private val JettyVersion = "latest.release"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
-  val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.1"
+  val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "latest.release"
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
-  val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016"
-  val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3"
+  val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "latest.release"
+  val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "latest.release"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
   val GWTQuery = "com.googlecode.gwtquery" % "gwtquery" % "1.3.3" % "provided"

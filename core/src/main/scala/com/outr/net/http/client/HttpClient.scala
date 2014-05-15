@@ -8,12 +8,11 @@ import org.apache.http.impl.client.{CloseableHttpClient, BasicCookieStore, HttpC
 import org.apache.http.impl.cookie.BasicClientCookie
 import org.powerscala.concurrent.Time
 import java.util.Date
-import com.outr.net.http.content.{ContentType, InputStreamContent, FileContent}
-import org.apache.http.entity.{InputStreamEntity, HttpEntityWrapper, FileEntity}
+import com.outr.net.http.content.{StringContent, ContentType, InputStreamContent, FileContent}
+import org.apache.http.entity.{ContentType => ApacheContentType, StringEntity, InputStreamEntity, HttpEntityWrapper, FileEntity}
 import scala.collection.JavaConversions._
 import com.outr.net.http.Cookie
 import org.powerscala.IO
-import org.apache.http.entity.{ContentType => ApacheContentType}
 import java.io.InputStream
 
 /**
@@ -58,6 +57,7 @@ object HttpClient extends HttpClient {
           case Some(c) => c match {
             case fc: FileContent => post.setEntity(new FileEntity(fc.file))
             case isc: InputStreamContent => post.setEntity(new InputStreamEntity(isc.input, isc.contentLength, ApacheContentType.create(isc.contentType.mimeType)))
+            case sc: StringContent => post.setEntity(new StringEntity(sc.value))
             case _ => throw new RuntimeException(s"Unsupported content HttpContent type: ${c.getClass.getName}.")
           }
           case None => // No content to send with POST

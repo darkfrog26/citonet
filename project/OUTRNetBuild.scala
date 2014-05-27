@@ -5,9 +5,9 @@ import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.1.0-SNAPSHOT",
+    version := "1.1.1-SNAPSHOT",
     organization := "com.outr.net",
-    scalaVersion := "2.10.3",
+    scalaVersion := "2.11.1",
     libraryDependencies ++= Seq(
       Dependencies.PowerScalaProperty
     ),
@@ -88,6 +88,5 @@ object Dependencies {
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "latest.release"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
-  val GWTQuery = "com.googlecode.gwtquery" % "gwtquery" % "1.3.3" % "provided"
-  val Specs2 = "org.specs2" %% "specs2" % "2.2.3" % "test"
+  val Specs2 = "org.specs2" %% "specs2" % "latest.release" % "test"
 }

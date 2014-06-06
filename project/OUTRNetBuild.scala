@@ -84,7 +84,7 @@ object Dependencies {
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
   val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "latest.release"
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
-  val Servlet = "org.eclipse.jetty.orbit" % "javax.servlet" % "latest.release"
+  val Servlet = "javax.servlet" % "javax.servlet-api" % "latest.release"
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "latest.release"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion

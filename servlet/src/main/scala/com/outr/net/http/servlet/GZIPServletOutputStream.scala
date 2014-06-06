@@ -1,7 +1,7 @@
 package com.outr.net.http.servlet
 
 import java.io.OutputStream
-import javax.servlet.ServletOutputStream
+import javax.servlet.{WriteListener, ServletOutputStream}
 import java.util.zip.GZIPOutputStream
 
 /**
@@ -23,4 +23,8 @@ class GZIPServletOutputStream(out: OutputStream) extends ServletOutputStream {
   override def write(b: Array[Byte]) = output.write(b)
 
   def write(b: Int) = output.write(b)
+
+  override def isReady = true
+
+  override def setWriteListener(writeListener: WriteListener) = throw new UnsupportedOperationException("setWriteListener is not supported yet")
 }

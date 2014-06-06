@@ -5,13 +5,17 @@ import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import com.outr.net.http.response.HttpResponse
 import org.powerscala.Priority
 import com.outr.net.http.client.HttpClient
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class ProxyHandler(proxy: Proxy, priority: Priority = Priority.Normal) extends HandlerListener {
+case class ProxyHandler(proxy: Proxy, priority: Priority = Priority.Normal) extends HandlerListener with Logging {
   def onReceive(request: HttpRequest, response: HttpResponse) = proxy.get(request) match {
-    case Some(proxyRequest) => HttpClient.send(ProxyHandler.forwarding(proxyRequest))
+    case Some(proxyRequest) => {
+      info(s"Proxying: ${request.url} to ${proxyRequest.url}")
+      HttpClient.send(ProxyHandler.forwarding(proxyRequest))
+    }
     case None => response
   }
 }

@@ -11,10 +11,6 @@ import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
  * @author Matt Hicks <matt@outr.com>
  */
 class OUTRNetServlet extends HttpServlet with Logging {
-  logger.configure {    // TODO: why isn't this working?
-    case l => l.withLevel(Level.Debug)
-  }
-
   private var application: HttpApplication = _
 
   override def init(config: ServletConfig) = {

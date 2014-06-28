@@ -2,13 +2,15 @@ package com.outr.net.http.client
 
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseHeaders, HttpResponseStatus, HttpResponse}
+import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.{HttpPost, HttpGet}
 import com.outr.net.{URL, Method}
 import org.apache.http.impl.client.{CloseableHttpClient, BasicCookieStore, HttpClients}
 import org.apache.http.impl.cookie.BasicClientCookie
+import org.apache.http.message.BasicNameValuePair
 import org.powerscala.concurrent.Time
 import java.util.Date
-import com.outr.net.http.content.{StringContent, ContentType, InputStreamContent, FileContent}
+import com.outr.net.http.content._
 import org.apache.http.entity.{ContentType => ApacheContentType, StringEntity, InputStreamEntity, HttpEntityWrapper, FileEntity}
 import scala.collection.JavaConversions._
 import com.outr.net.http.Cookie
@@ -58,6 +60,13 @@ object HttpClient extends HttpClient {
             case fc: FileContent => post.setEntity(new FileEntity(fc.file))
             case isc: InputStreamContent => post.setEntity(new InputStreamEntity(isc.input, isc.contentLength, ApacheContentType.create(isc.contentType.mimeType)))
             case sc: StringContent => post.setEntity(new StringEntity(sc.value))
+            case fpc: FormPostContent => {
+              val params = fpc.parameters.values.flatMap {
+                case (key, values) => values.map(v => new BasicNameValuePair(key, v))
+              }.toList
+              val entity = new UrlEncodedFormEntity(params)
+              post.setEntity(entity)
+            }
             case _ => throw new RuntimeException(s"Unsupported content HttpContent type: ${c.getClass.getName}.")
           }
           case None => // No content to send with POST

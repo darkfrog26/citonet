@@ -11,7 +11,7 @@ case class HostProxy(originHost: String, destinationHost: String, destinationPor
       case Some(p) => p
       case None => request.url.port
     }
-    Some(request.copy(request.url.copy(host = destinationHost, port = port)))
+    Some(request.copy(request.url.copy(host = destinationHost, port = port)).header("Host", s"$destinationHost:$port"))
   } else {
     None
   }

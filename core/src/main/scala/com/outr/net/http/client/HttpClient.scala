@@ -34,6 +34,8 @@ object Test {
 }
 
 object HttpClient extends HttpClient {
+  private val IgnoredHeaders = Set("Content-Length")
+
   def send(request: HttpRequest) = {
     val cookieStore = new BasicCookieStore
     request.cookies.values.foreach {
@@ -75,7 +77,7 @@ object HttpClient extends HttpClient {
       }
     }
     request.headers.values.foreach {
-      case (key, value) => if (key != "Content-Length") {   // Content-Length is special and is set above if set
+      case (key, value) => if (!IgnoredHeaders.contains(key)) {   // Content-Length is special and is set above if set
         clientRequest.setHeader(key, value)
       }
     }

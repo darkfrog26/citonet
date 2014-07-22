@@ -23,6 +23,7 @@ case class ContentType(mimeType: String, charSet: String = null, boundary: Strin
 object ContentType {
   lazy val Plain = new ContentType("text/plain")
   lazy val HTML = new ContentType("text/html")
+  lazy val XML = new ContentType("text/xml")
   lazy val JSON = new ContentType("application/json")
   lazy val CSV = new ContentType("text/csv")
   lazy val FormURLEncoded = new ContentType("application/x-www-form-urlencoded")

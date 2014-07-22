@@ -13,4 +13,6 @@ case class FormPostContent(contentString: String) extends HttpContent {
   override def contentLength = contentString.length
 
   override def contentType = ContentType.FormURLEncoded
+
+  override lazy val asString = contentString
 }

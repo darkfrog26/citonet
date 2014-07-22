@@ -8,5 +8,7 @@ case class StringContent(value: String,
                          lastModified: Long = -1L) extends HttpContent {
   lazy val contentLength = value.length.toLong
 
+  override def asString = value
+
   override def toString = s"StringContent($value, contentType: $contentType, contentLength: $contentLength)"
 }

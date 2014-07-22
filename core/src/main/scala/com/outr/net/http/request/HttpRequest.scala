@@ -24,13 +24,7 @@ case class HttpRequest(url: URL,
    */
   lazy val store = new MapStorage[String, Any]
 
-  lazy val contentString = content match {
-    case Some(c) => c match {
-      case isc: InputStreamContent => Some(IO.copy(isc.input))
-      case fpc: FormPostContent => Some(fpc.contentString)
-    }
-    case None => None
-  }
+  def contentString = content.map(c => c.asString)
 
   /**
    * The originating remoteAddress specified by proxy or the current value of the remoteAddress.

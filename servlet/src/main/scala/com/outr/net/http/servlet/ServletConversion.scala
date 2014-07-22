@@ -82,7 +82,10 @@ object ServletConversion extends Logging {
     }
     if (response.content != null) {
       // Send the content type
-      servletResponse.setContentType(response.content.contentType.toString)
+      response.content.contentType match {
+        case null => // No content-type to set
+        case contentType => servletResponse.setContentType(contentType.toString)
+      }
       servletResponse.setCharacterEncoding("UTF-8")
       if (response.content.lastModified != -1) {    // Send last modified if available
         val date = "%1$ta, %1$te %1$tb %1$tY %1$tT %1$tZ".format(response.content.lastModified)

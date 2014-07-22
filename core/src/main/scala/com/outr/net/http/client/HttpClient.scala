@@ -85,7 +85,13 @@ object HttpClient extends HttpClient {
     val clientResponse = client.execute(clientRequest)
     val content = clientResponse.getEntity match {
       case null => null
-      case r: HttpEntityWrapper => InputStreamContent(HttpClientInputStream(client, r.getContent), ContentType.parse(r.getContentType.getValue), r.getContentLength, System.currentTimeMillis())
+      case r: HttpEntityWrapper => {
+        val contentTypeString = r.getContentType match {
+          case null => null
+          case ct => ct.getValue
+        }
+        InputStreamContent(HttpClientInputStream(client, r.getContent), ContentType.parse(contentTypeString), r.getContentLength, System.currentTimeMillis())
+      }
     }
     val status = HttpResponseStatus.byCode(clientResponse.getStatusLine.getStatusCode)
     val headers = HttpResponseHeaders(clientResponse.getAllHeaders.map(h => h.getName -> h.getValue).toMap)

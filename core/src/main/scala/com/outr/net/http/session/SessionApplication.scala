@@ -22,7 +22,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
 
   handlers.add(new SessionCreateHandler, Priority.Critical)      // Add a handler to set the session (critical priority)
 
-  protected def cookieName: String = getClass.getSimpleName
+  protected def cookieName: String = getClass.getSimpleName.replaceAll("[$]", "")
 
   protected def createSession(request: HttpRequest, id: String): S
 
@@ -63,7 +63,7 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
       session.checkIn()     // Keep the session from timing out
       _sessions += session.id -> session
       request.store(storeToken) = session
-      response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years))
+      response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years, domain = request.url.domain))
     }
   }
 

@@ -71,7 +71,11 @@ object ServletConversion extends Logging {
       case cookie => {
         val servletCookie = new http.Cookie(cookie.name, cookie.value)
         if (cookie.comment != null) servletCookie.setComment(cookie.comment)
-        if (cookie.domain != null) servletCookie.setDomain(cookie.domain)
+        if (cookie.domain != null) {
+          servletCookie.setDomain(cookie.domain)
+        } else {
+          servletCookie.setDomain(request.url.host)
+        }
         servletCookie.setHttpOnly(cookie.httpOnly)
         if (cookie.maxAge != Int.MinValue) servletCookie.setMaxAge(math.round(cookie.maxAge).toInt)
         if (cookie.path != null) servletCookie.setPath(cookie.path)

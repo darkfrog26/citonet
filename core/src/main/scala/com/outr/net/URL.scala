@@ -58,6 +58,10 @@ case class URL(protocol: Protocol = Protocol.Http,
 
   def breakDown = s"protocol: $protocol, host: $host, port: $port, path: $path, parameters: $parameters, hash: $hash"
 
+  def param(key: String, value: String) = {
+    copy(parameters = parameters + (key -> value))
+  }
+
   override def toString = s
 }
 

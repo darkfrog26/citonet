@@ -1,5 +1,7 @@
 package com.outr.net.http
 
+import java.io.File
+
 import com.outr.net.http.handler._
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.content.{URLContent, HttpContent, StringContent}
@@ -38,10 +40,10 @@ abstract class WebApplication[S <: Session] extends SessionApplication[S] with N
   }
 
   def addFilePath(urlBasePath: String,
-                   lookupPath: String,
-                   allowCaching: Boolean = true,
-                   priority: Priority = Priority.Normal) = {
-    handlers.add(FileLoadingLookupHandler(urlBasePath, lookupPath, allowCaching = allowCaching), priority)
+                  directory: File,
+                  allowCaching: Boolean = true,
+                  priority: Priority = Priority.Normal) = {
+    handlers.add(FileLoadingLookupHandler(urlBasePath, directory, allowCaching = allowCaching), priority)
   }
 
   def register(path: String, resource: String): Unit = {

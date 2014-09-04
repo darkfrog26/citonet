@@ -53,7 +53,7 @@ object OUTRNetBuild extends Build {
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
-    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.ApacheHttpClient, Dependencies.Specs2))
+    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.ApacheHttpClient, Dependencies.ScalaTest))
 
   // HTTP Server Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
@@ -88,5 +88,5 @@ object Dependencies {
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "latest.release"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
-  val Specs2 = "org.specs2" %% "specs2" % "latest.release" % "test"
+  val ScalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
 }

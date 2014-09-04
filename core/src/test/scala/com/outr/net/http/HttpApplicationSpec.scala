@@ -1,22 +1,22 @@
 package com.outr.net.http
 
-import org.specs2.mutable._
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 import com.outr.net.URL
+import org.scalatest.{Matchers, WordSpec}
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class HttpApplicationSpec extends Specification {
+class HttpApplicationSpec extends WordSpec with Matchers {
   "TestHttpApplication" should {
     "receive OK for test.html" in {
       val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/test.html").get), HttpResponse.NotFound)
-      response.status must be(HttpResponseStatus.OK)
+      response.status should equal(HttpResponseStatus.OK)
     }
     "receive NotFound for other.html" in {
       val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/other.html").get), HttpResponse.NotFound)
-      response.status must be(HttpResponseStatus.NotFound)
+      response.status should equal(HttpResponseStatus.NotFound)
     }
   }
 }

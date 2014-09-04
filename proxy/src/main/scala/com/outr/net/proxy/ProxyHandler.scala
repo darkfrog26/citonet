@@ -13,7 +13,7 @@ import org.powerscala.log.Logging
 case class ProxyHandler(proxy: Proxy, priority: Priority = Priority.Normal) extends HandlerListener with Logging {
   def onReceive(request: HttpRequest, response: HttpResponse) = proxy.get(request) match {
     case Some(proxyRequest) => {
-      info(s"Proxying: ${request.url} to ${proxyRequest.url}")
+      debug(s"Proxying: ${request.url} to ${proxyRequest.url}")
       HttpClient.send(ProxyHandler.forwarding(proxyRequest))
     }
     case None => response

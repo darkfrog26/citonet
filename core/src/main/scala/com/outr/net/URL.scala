@@ -5,6 +5,8 @@ import java.net
 import org.powerscala.IO
 import com.outr.net.http.HttpParameters
 
+import scala.annotation.tailrec
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -80,6 +82,24 @@ object URL {
 
   def lookupResource(s: String) = apply(Thread.currentThread().getContextClassLoader.getResource(s))
 
+  @tailrec
+  private def parsePath(path: String): String = {
+    val dotDotIndex = path.indexOf("/../")
+    if (dotDotIndex == -1) {
+      path
+    } else {
+      val before = path.substring(0, dotDotIndex)
+      val after = path.substring(dotDotIndex + 4)
+      val adjustIndex = before.lastIndexOf('/')
+      val modifiedPath = if (adjustIndex != -1) {
+        s"${before.substring(0, adjustIndex)}/$after"
+      } else {
+        s"$before/$after"
+      }
+      parsePath(modifiedPath)
+    }
+  }
+
   def parse(url: String) = url match {
     case URLParser(_protocol, host, _port, _path, _parameters) => {
       val protocol = Protocol.byScheme(_protocol.substring(0, _protocol.lastIndexOf(':')))
@@ -89,7 +109,7 @@ object URL {
       }
       val path = _path match {
         case null => "/"
-        case p => p
+        case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
       Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
@@ -101,7 +121,7 @@ object URL {
       }
       val path = _path match {
         case null => "/"
-        case p => p
+        case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
       Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters))
@@ -114,7 +134,7 @@ object URL {
       }
       val path = _path match {
         case null => "/"
-        case p => p
+        case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
       Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))

@@ -23,10 +23,9 @@ object ServletConversion extends Logging {
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
     val contentType = ContentType.parse(servletRequest.getContentType)
-    val content = if (servletRequest.getContentLength != -1) {    // TODO: is it possible this might be -1 and there still be content?
-      Some(InputStreamContent(servletRequest.getInputStream, contentType, servletRequest.getContentLength, lastModified = -1L))
-    } else {
-      None
+    val content = servletRequest.getInputStream match {
+      case null => None
+      case input => Some(InputStreamContent(input, contentType, servletRequest.getContentLength, lastModified = -1L))
     }
     val params = HttpParameters(servletRequest.getParameterMap.collect {
       case (name, values) => name -> values.toList
@@ -73,9 +72,9 @@ object ServletConversion extends Logging {
         if (cookie.comment != null) servletCookie.setComment(cookie.comment)
         if (cookie.domain != null) {
           servletCookie.setDomain(cookie.domain)
-        } else {
-          servletCookie.setDomain(request.url.host)
-        }
+        } //else {
+          //servletCookie.setDomain(request.url.host)
+        //}
         servletCookie.setHttpOnly(cookie.httpOnly)
         if (cookie.maxAge != Int.MinValue) servletCookie.setMaxAge(math.round(cookie.maxAge).toInt)
         if (cookie.path != null) servletCookie.setPath(cookie.path)

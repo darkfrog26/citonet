@@ -4,7 +4,7 @@ import com.outr.net.http.handler.HandlerListener
 import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import com.outr.net.http.response.HttpResponse
 import org.powerscala.Priority
-import com.outr.net.http.client.HttpClient
+import com.outr.net.http.client.{ApacheHttpClient, HttpClient}
 import org.powerscala.log.Logging
 
 /**
@@ -14,7 +14,7 @@ case class ProxyHandler(proxy: Proxy, priority: Priority = Priority.Normal) exte
   def onReceive(request: HttpRequest, response: HttpResponse) = proxy.get(request) match {
     case Some(proxyRequest) => {
       debug(s"Proxying: ${request.url} to ${proxyRequest.url}")
-      HttpClient.send(ProxyHandler.forwarding(proxyRequest))
+      ApacheHttpClient.send(ProxyHandler.forwarding(proxyRequest))
     }
     case None => response
   }

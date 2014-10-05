@@ -56,7 +56,7 @@ object OUTRNetServlet extends Logging {
         debug(s"Request: $request")
         application.contextualize(request) {
           val response = application.onReceive(request, HttpResponse(status = HttpResponseStatus.NotFound))
-          val gzip = request.headers.gzipSupport
+          val gzip = request.headers.gzipSupport && (response.content == null || useGzip(response.content.contentType.mimeType))
           ServletConversion.convert(request, response, servletResponse, gzip)
         }
       } catch {
@@ -69,5 +69,11 @@ object OUTRNetServlet extends Logging {
         }
       }
     }
+  }
+
+  def useGzip(mimeType: String) = if (mimeType.startsWith("video/") || mimeType.startsWith("audio/")) {
+    false
+  } else {
+    true
   }
 }

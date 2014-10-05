@@ -79,13 +79,13 @@ object OUTRNetBuild extends Build {
 
 object Dependencies {
   private val PowerScalaVersion = "latest.integration"
-  private val JettyVersion = "latest.release"
+  private val JettyVersion = "9.2.3.v20140905"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
-  val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "latest.release"
+  val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.5"
   val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
-  val Servlet = "javax.servlet" % "javax.servlet-api" % "latest.release"
-  val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "latest.release"
+  val Servlet = "javax.servlet" % "javax.servlet-api" % "3.1.0"
+  val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3.1"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
   val ScalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"

@@ -45,7 +45,13 @@ trait MultipartHandler extends HttpHandler with Logging {
             if (item.isFormField) {
               support.onField(item.getFieldName, item.getString)
             } else {
-              val file = File.createTempFile(item.getName, "outrnet")
+              val index = item.getName.lastIndexOf('.')
+              val (name, extension) = if (index != -1) {
+                item.getName.substring(0, index) -> item.getName.substring(index)
+              } else {
+                item.getName -> ".tmp"
+              }
+              val file = File.createTempFile(s"outrnet.$name", extension)
               try {
                 item.write(file)
                 support.onFile(item.getName, file)

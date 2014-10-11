@@ -49,7 +49,7 @@ object OUTRNetBuild extends Build {
 
   // Aggregator
   lazy val root = Project("root", file("."), settings = createSettings("outrnet"))
-    .aggregate(core, netty, servlet, jetty, proxy)
+    .aggregate(core, netty, servlet, jetty, tomcat, proxy)
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
@@ -65,6 +65,9 @@ object OUTRNetBuild extends Build {
   lazy val jetty = Project("jetty", file("jetty"), settings = createSettings("outrnet-jetty"))
     .dependsOn(servlet)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyServer))
+  lazy val tomcat = Project("tomcat", file("tomcat"), settings = createSettings("outrnet-tomcat"))
+    .dependsOn(servlet)
+    .settings(libraryDependencies ++= Seq(Dependencies.TomcatCore, Dependencies.TomcatJULI))
 
   // Proxy
   lazy val proxy = Project("proxy", file("proxy"), settings = createSettings("outrnet-proxy"))
@@ -72,7 +75,7 @@ object OUTRNetBuild extends Build {
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, servlet, proxy, jetty)
+    .dependsOn(core, servlet, proxy, jetty, tomcat)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
     .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
@@ -80,6 +83,7 @@ object OUTRNetBuild extends Build {
 object Dependencies {
   private val PowerScalaVersion = "latest.integration"
   private val JettyVersion = "9.2.3.v20140905"
+  private val TomcatVersion = "8.0.14"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
   val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.5"
@@ -88,5 +92,7 @@ object Dependencies {
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3.1"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
+  val TomcatCore = "org.apache.tomcat.embed" % "tomcat-embed-core" % TomcatVersion
+  val TomcatJULI = "org.apache.tomcat.embed" % "tomcat-embed-logging-juli" % TomcatVersion
   val ScalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
 }

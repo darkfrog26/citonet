@@ -31,7 +31,7 @@ trait MultipartHandler extends HttpHandler with Logging {
   def onReceive(request: HttpRequest, response: HttpResponse) = {
     val support = create(request, response)
     request.content match {
-      case Some(content) => if (content.contentType.is(ContentType.MultiPartFormData)) {
+      case Some(content) => if (content.contentType != null && content.contentType.is(ContentType.MultiPartFormData)) {
         val input = content match {
           case c: StreamableContent => c.input
           case _ => throw new RuntimeException(s"Unsupported content: ${content.getClass}")

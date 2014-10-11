@@ -1,6 +1,7 @@
 package com.outr.net.examples
 
 import com.outr.net.http.WebApplication
+import com.outr.net.http.tomcat.TomcatApplication
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
@@ -15,7 +16,7 @@ import org.powerscala.Priority
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ExampleWebApplication extends WebApplication[MapSession] with Logging with JettyApplication {
+object ExampleWebApplication extends WebApplication[MapSession] with Logging with TomcatApplication {
   protected def createSession(request: HttpRequest, id: String) = new MapSession(id, this)
 
   def init() = {

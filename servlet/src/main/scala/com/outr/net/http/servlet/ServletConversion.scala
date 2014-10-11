@@ -1,5 +1,8 @@
 package com.outr.net.http.servlet
 
+import java.net.SocketTimeoutException
+import java.util.concurrent.TimeoutException
+
 import com.outr.net.{IP, Method, ArrayBufferPool, URL}
 import scala.collection.JavaConversions._
 import org.powerscala.IO
@@ -9,7 +12,7 @@ import com.outr.net.http.content._
 import java.nio.charset.Charset
 import com.outr.net.http.HttpParameters
 import com.outr.net.http.content.InputStreamContent
-import scala.Some
+import org.powerscala._
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.StringContent
 import org.powerscala.log.Logging
@@ -106,38 +109,31 @@ object ServletConversion extends Logging {
       } else {
         outputStream
       }
-      response.content match {
-        case content: StreamableContent => {
-          val input = content.input
-          ArrayBufferPool.use() {
-            case buf => IO.stream(input, output, buf, closeOnComplete = true)
+      try {
+        response.content match {
+          case content: StreamableContent => {
+            val input = content.input
+            ArrayBufferPool.use() {
+              case buf => IO.stream(input, output, buf, closeOnComplete = true)
+            }
+            output.close()
           }
-          outputStream.close()
-        }
-        case content: StreamingContent => {
-          try {
+          case content: StreamingContent => {
             content.stream(output)
-          } finally {
-            try {
-              output.flush()
-              output.close()
-            } catch {
-              case t: Throwable => // Ignore issues trying to flush
-            }
           }
-        }
-        case content: StringContent => {
-          try {
+          case content: StringContent => {
             output.write(content.value.getBytes(Charset.forName("UTF-8")))
-          } finally {
-            try {
-              output.flush()
-              output.close()
-            } catch {
-              case t: Throwable => // Ignore issues trying to flush
-            }
           }
         }
+      } catch {
+        case t: Throwable => t.rootCause match {
+          case exc: SocketTimeoutException => warn(s"Socket Timeout while writing response from ${request.url} (${t.getMessage}).")
+          case exc: TimeoutException => warn(s"Timeout while writing response from ${request.url} (${t.getMessage}).")
+          case _ => throw t
+        }
+      } finally {
+        ignoreExceptions(output.flush())
+        ignoreExceptions(output.close())
       }
     }
   }

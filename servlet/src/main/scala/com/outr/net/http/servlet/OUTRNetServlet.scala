@@ -13,13 +13,17 @@ import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 class OUTRNetServlet extends HttpServlet with Logging {
   private var application: HttpApplication = _
 
-  override def init(config: ServletConfig) = {
+  def init(application: HttpApplication) = {
+    this.application = application
+    application.initialize()
+    info(s"Initialized ${application} as application for servlet successfully.")
+  }
+
+  override def init(config: ServletConfig) = if (application == null) {
     val applicationClass = config.getInitParameter("application")
     val clazz: EnhancedClass = Class.forName(applicationClass)
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
-    application = companion.asInstanceOf[HttpApplication]
-    application.initialize()
-    info(s"Initialized $clazz as application for servlet successfully.")
+    init(companion.asInstanceOf[HttpApplication])
   }
 
   override def destroy() = {

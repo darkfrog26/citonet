@@ -8,11 +8,11 @@ import org.powerscala.log.Logging
  */
 case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders with Logging {
   lazy val IfModifiedSince = date(HttpRequestHeaders.IfModifiedSince)
-  lazy val AcceptEncoding = values.get(HttpRequestHeaders.AcceptEncoding)
-  lazy val UserAgent = values.get(HttpRequestHeaders.UserAgent)
+  lazy val AcceptEncoding = get(HttpRequestHeaders.AcceptEncoding)
+  lazy val UserAgent = get(HttpRequestHeaders.UserAgent)
 
   def parseCookies() = {
-    values.get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
+    get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
       case Some(c) => c
       case None => Map.empty[String, Cookie]
     }

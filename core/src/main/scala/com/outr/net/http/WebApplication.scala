@@ -47,7 +47,9 @@ abstract class WebApplication[S <: Session] extends SessionApplication[S] with N
   }
 
   def register(path: String, resource: String): Unit = {
-    addContent(URLContent(getClass.getClassLoader.getResource(resource)), path)
+    val url = getClass.getClassLoader.getResource(resource)
+    if (url == null) throw new NullPointerException(s"Unable to find resource in classload: $resource.")
+    addContent(URLContent(url), path)
   }
 
   def register(path: String, url: java.net.URL): Unit = {

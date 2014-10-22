@@ -25,11 +25,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    */
   def request = requestOption.getOrElse(throw new RuntimeException(s"HttpRequest is not set for the current thread (${getClass.getSimpleName})!"))
 
-  def contextualize[R](request: HttpRequest)(f: => R) = if (requestOption == Some(request)) {     // Already the current context
-    f
-  } else {
-    requestResponses.context(request)(f)
-  }
+  def contextualize[R](request: HttpRequest)(f: => R) = requestResponses.context(request)(f)
 
   @volatile private var _initialized = false
   @volatile private var running = false

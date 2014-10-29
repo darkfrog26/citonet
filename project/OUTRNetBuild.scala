@@ -5,7 +5,7 @@ import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.1.2-SNAPSHOT",
+    version := "1.1.3-SNAPSHOT",
     organization := "com.outr.net",
     scalaVersion := "2.11.2",
     libraryDependencies ++= Seq(

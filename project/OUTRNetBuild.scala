@@ -1,13 +1,12 @@
+import sbt.Keys._
 import sbt._
-import Keys._
-
 import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
-  val baseSettings = Defaults.defaultSettings ++ Seq(
+  val baseSettings = Defaults.coreDefaultSettings ++ Seq(
     version := "1.1.3-SNAPSHOT",
     organization := "com.outr.net",
-    scalaVersion := "2.11.2",
+    scalaVersion := "2.11.4",
     libraryDependencies ++= Seq(
       Dependencies.PowerScalaProperty
     ),
@@ -81,18 +80,18 @@ object OUTRNetBuild extends Build {
 }
 
 object Dependencies {
-  private val PowerScalaVersion = "latest.integration"
-  private val JettyVersion = "9.2.3.v20140905"
+  private val PowerScalaVersion = "1.6.7-SNAPSHOT"
+  private val JettyVersion = "9.2.4.v20141103"
   private val TomcatVersion = "8.0.14"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
   val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.5"
-  val Netty = "io.netty" % "netty-all" % "4.0.9.Final"
+  val Netty = "io.netty" % "netty-all" % "4.0.24.Final"
   val Servlet = "javax.servlet" % "javax.servlet-api" % "3.1.0"
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3.1"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
   val TomcatCore = "org.apache.tomcat.embed" % "tomcat-embed-core" % TomcatVersion
   val TomcatJULI = "org.apache.tomcat.embed" % "tomcat-embed-logging-juli" % TomcatVersion
-  val ScalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
+  val ScalaTest = "org.scalatest" %% "scalatest" % "2.2.2" % "test"
 }

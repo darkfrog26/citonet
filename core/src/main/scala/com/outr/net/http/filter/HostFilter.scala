@@ -15,7 +15,7 @@ case class HostFilter(host: String, handler: HttpHandler) extends HandlerFilter 
   override def modify(request: HttpRequest) = request
 
   override def handle(request: HttpRequest, response: HttpResponse) = handler match {
-    case application: HttpApplication => application.contextualize(request) {
+    case application: HttpApplication => HttpApplication.around(request) {
       handler.onReceive(request, response)
     }
     case _ => handler.onReceive(request, response)

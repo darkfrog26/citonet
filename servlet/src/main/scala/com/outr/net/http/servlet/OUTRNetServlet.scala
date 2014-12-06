@@ -58,7 +58,7 @@ object OUTRNetServlet extends Logging {
       }
       try {
         debug(s"Request: $request")
-        application.contextualize(request) {
+        HttpApplication.around(request) {
           val response = application.onReceive(request, HttpResponse(status = HttpResponseStatus.NotFound))
           val gzip = request.headers.gzipSupport && (response.content == null || useGzip(response.content.contentType.mimeType))
           ServletConversion.convert(request, response, servletResponse, gzip)

@@ -14,18 +14,12 @@ import org.powerscala.event.processor.UnitProcessor
  * @author Matt Hicks <matt@outr.com>
  */
 trait HttpApplication extends Listenable with HttpHandler with Updatable with Disposable {
-  private val requestResponses = new LocalStack[HttpRequest]
-
   /**
    * Option[HttpRequest]
    */
-  def requestOption = requestResponses.get()
-  /**
-   * The HttpRequest for the current thread. This will throw a RuntimeException if there is no request contextualized.
-   */
-  def request = requestOption.getOrElse(throw new RuntimeException(s"HttpRequest is not set for the current thread (${getClass.getSimpleName})!"))
+  def requestOption = HttpApplication.request.get()
 
-  def contextualize[R](request: HttpRequest)(f: => R) = requestResponses.context(request)(f)
+  def request = requestOption.getOrElse(throw new RuntimeException("HttpRequest is not defined on the current thread. Use requestOption instead."))
 
   @volatile private var _initialized = false
   @volatile private var running = false
@@ -85,5 +79,18 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 }
 
 object HttpApplication {
+  private val request = new ThreadLocal[Option[HttpRequest]] {
+    override def initialValue() = None
+  }
+
   def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz")
+
+  def around[R](request: HttpRequest)(f: => R): R = {
+    this.request.set(Option(request))
+    try {
+      f
+    } finally {
+      this.request.set(None)
+    }
+  }
 }

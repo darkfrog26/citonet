@@ -1,3 +1,4 @@
+/*
 package com.outr.net.proxy
 
 import java.io._
@@ -140,4 +141,4 @@ class SimpleProxyConnection(socket: Socket, proxy: URL => HostAndPort) {
       remoteSocket.close()
     }
   }
-}
+}*/

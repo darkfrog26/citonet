@@ -47,15 +47,15 @@ class OUTRNetServlet extends HttpServlet with Logging {
 
 object OUTRNetServlet extends Logging {
   def handle(application: HttpApplication, servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
-    application.around {
-      val request = try {
-        ServletConversion.convert(servletRequest)
-      } catch {
-        case t: Throwable => {
-          error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
-          throw t
-        }
+    val request = try {
+      ServletConversion.convert(servletRequest)
+    } catch {
+      case t: Throwable => {
+        error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
+        throw t
       }
+    }
+    application.around(request) {
       try {
         debug(s"Request: $request")
         HttpApplication.around(request) {

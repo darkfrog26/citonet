@@ -63,9 +63,10 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
   /**
    * This method is invoked per request to allow wrapping around the entire request/response functionality.
    *
+   * @param request the request that is being handled
    * @param f the function to manage the request / response process.
    */
-  def around[R](f: => R): R = f
+  def around[R](request: HttpRequest)(f: => R): R = f
 
   /**
    * Called once when the application is terminating (not guaranteed to be executed).

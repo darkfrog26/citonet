@@ -15,13 +15,23 @@ trait JettyApplication extends HttpApplication {
     case p => p.toInt
   }
 
+  def start() = {
+    server = JettyServer(this, port = port)
+  }
+
+  def stop() = {
+    if (server != null) {
+      server.dispose()
+    }
+  }
+
   override def dispose() = {
     super.dispose()
 
-    server.dispose()
+    stop()
   }
 
   def main(args: Array[String]): Unit = {
-    server = JettyServer(this, port = port)
+    start()
   }
 }

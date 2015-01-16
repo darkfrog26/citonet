@@ -4,7 +4,7 @@ import spray.revolver.RevolverPlugin._
 
 object OUTRNetBuild extends Build {
   val baseSettings = Defaults.coreDefaultSettings ++ Seq(
-    version := "1.1.3-SNAPSHOT",
+    version := "1.1.3",
     organization := "com.outr.net",
     scalaVersion := "2.11.4",
     libraryDependencies ++= Seq(
@@ -80,7 +80,7 @@ object OUTRNetBuild extends Build {
 }
 
 object Dependencies {
-  private val PowerScalaVersion = "1.6.7-SNAPSHOT"
+  private val PowerScalaVersion = "1.6.7"
   private val JettyVersion = "9.2.5.v20141112"
   private val TomcatVersion = "8.0.14"
 

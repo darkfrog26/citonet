@@ -2,6 +2,7 @@ package com.outr.net.examples
 
 import com.outr.net.http.WebApplication
 import com.outr.net.http.tomcat.TomcatApplication
+import com.outr.net.service.Service
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
@@ -41,6 +42,15 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
 
     // Add example html files
     addClassPath("/", "html/")
+
+    // Service
+    val service = Service[Receiving, Sending] {
+      case receiving => {
+        println(s"Receiving: $receiving")
+        Sending(receiving.name.reverse)
+      }
+    }
+    service.bindTo(this)
   }
 
   override def dispose() = {
@@ -48,3 +58,7 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
     info("Disposed application!")
   }
 }
+
+case class Receiving(name: String)
+
+case class Sending(name: String)

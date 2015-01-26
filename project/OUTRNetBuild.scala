@@ -8,7 +8,8 @@ object OUTRNetBuild extends Build {
     organization := "com.outr.net",
     scalaVersion := "2.11.5",
     libraryDependencies ++= Seq(
-      Dependencies.PowerScalaProperty
+      Dependencies.PowerScalaProperty,
+      Dependencies.ScalaTest
     ),
     fork := true,
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
@@ -48,11 +49,16 @@ object OUTRNetBuild extends Build {
 
   // Aggregator
   lazy val root = Project("root", file("."), settings = createSettings("outrnet"))
-    .aggregate(core, netty, servlet, jetty, tomcat, proxy)
+    .aggregate(core, service, netty, servlet, jetty, tomcat, proxy)
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
-    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.ApacheHttpClient, Dependencies.ScalaTest))
+    .settings(libraryDependencies ++= Seq(Dependencies.Servlet, Dependencies.CommonsFileUpload, Dependencies.ApacheHttpClient))
+
+  // Service
+  lazy val service = Project("service", file("service"), settings = createSettings("outrnet-service"))
+    .dependsOn(core)
+    .settings(libraryDependencies ++= Seq(Dependencies.PowerScalaJSON))
 
   // HTTP Server Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
@@ -74,7 +80,7 @@ object OUTRNetBuild extends Build {
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, servlet, proxy, jetty, tomcat)
+    .dependsOn(core, service, servlet, proxy, jetty, tomcat)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
     .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
@@ -85,6 +91,7 @@ object Dependencies {
   private val TomcatVersion = "8.0.17"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
+  val PowerScalaJSON = "org.powerscala" %% "powerscala-json" % PowerScalaVersion
   val ApacheHttpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.6"
   val Netty = "io.netty" % "netty-all" % "4.0.25.Final"
   val Servlet = "javax.servlet" % "javax.servlet-api" % "3.1.0"

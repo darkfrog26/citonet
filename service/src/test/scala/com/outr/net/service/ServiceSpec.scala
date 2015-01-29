@@ -14,7 +14,7 @@ import org.scalatest.{Matchers, WordSpec}
  * @author Matt Hicks <matt@outr.com>
  */
 class ServiceSpec extends WordSpec with Matchers {
-  "TestService" should {
+  "ReverseService" should {
     "configure the service" in {
       ReverseService.bindTo(TestApplication, "/service")
     }
@@ -38,6 +38,33 @@ class ServiceSpec extends WordSpec with Matchers {
       TestApplication.onReceive(HttpRequest(url = URL("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
     }
   }
+  "SpecialService" should {
+    "configure the service" in {
+      SpecialService.bindTo(TestApplication, "/special")
+    }
+    "verify last is unset" in {
+      SpecialService.lastTest should equal(null)
+      SpecialService.lastRequest should equal(null)
+      SpecialService.lastResponse should equal(null)
+    }
+    "call the service with GET parameters" in {
+      val httpRequest = HttpRequest(url = URL("http://localhost/special?test=Hello"))
+      val httpResponse = HttpResponse(status = HttpResponseStatus.NotFound)
+      val response = TestApplication.onReceive(httpRequest, httpResponse)
+      response.status should equal(HttpResponseStatus.OK)
+      response.content.contentType should equal(ContentType.Plain)
+      response.content.asString should equal("HELLO")
+      SpecialService.lastTest should equal("Hello")
+      SpecialService.lastRequest should equal(httpRequest)
+      SpecialService.lastResponse shouldNot equal(null)
+    }
+    "unbind the service" in {
+      SpecialService.unbindFrom(TestApplication, "/special")
+    }
+    "verify the service is no longer receiving" in {
+      TestApplication.onReceive(HttpRequest(url = URL("http://localhost/special?test=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
+    }
+  }
 }
 
 object TestApplication extends WebApplication[MapSession] {
@@ -55,3 +82,20 @@ object ReverseService extends Service[Receiving, Sending] {
 case class Receiving(name: String)
 
 case class Sending(name: String)
+
+object SpecialService extends Service[SpecialReceive, SpecialResponse] {
+  var lastTest: String = _
+  var lastRequest: HttpRequest = _
+  var lastResponse: HttpResponse = _
+
+  override def apply(receive: SpecialReceive) = {
+    lastTest = receive.test
+    lastRequest = receive.request
+    lastResponse = receive.response
+    SpecialResponse(receive.test.toUpperCase, receive.response.copy(StringContent(receive.test.toUpperCase), status = HttpResponseStatus.OK))
+  }
+}
+
+case class SpecialReceive(test: String, request: HttpRequest, response: HttpResponse)
+
+case class SpecialResponse(test: String, response: HttpResponse)

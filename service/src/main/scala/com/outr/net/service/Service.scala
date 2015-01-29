@@ -10,6 +10,7 @@ import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
 import org.powerscala.json._
 import org.powerscala.log.Logging
 import org.powerscala.property.Property
+import org.powerscala.reflect._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -17,16 +18,31 @@ import org.powerscala.property.Property
 abstract class Service[In <: AnyRef, Out](implicit inManifest: Manifest[In], outManifest: Manifest[Out]) extends HttpHandler with Logging {
   val pretty = Property[Boolean](default = Some(false))
 
+  val inHttpRequestCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpRequest]))
+  val inHttpResponseCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpResponse]))
+  val outHttpResponseCaseValue = outManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpResponse]))
+
   def apply(request: In): Out
 
   override def onReceive(request: HttpRequest, response: HttpResponse) = {
     val json = requestJSON(request)
     json match {
       case Some(content) => {
-        val in = typedJSON[In](content)
+        var in = typedJSON[In](content)
+        in = inHttpRequestCaseValue match {
+          case Some(cv) => cv.copy(in, request)
+          case None => in
+        }
+        in = inHttpResponseCaseValue match {
+          case Some(cv) => cv.copy(in, response)
+          case None => in
+        }
         try {
-          val out = apply(in.asInstanceOf[In])
-          response.copy(content = StringContent(toJSON(out).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.OK)
+          val out = apply(in)
+          outHttpResponseCaseValue match {
+            case Some(cv) => cv[HttpResponse](out.asInstanceOf[AnyRef])
+            case None => response.copy(content = StringContent(toJSON(out).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.OK)
+          }
         } catch {
           case t: Throwable => {
             warn(s"Error occurred in handler function with input of $in.", t)

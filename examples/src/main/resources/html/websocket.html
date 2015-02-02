@@ -9,6 +9,9 @@
                 console.log('Received message: ' + evt.data);
             }
         });
+        c.on('json', function(obj) {
+            console.log('Received JSON: ' + obj + ' (' + JSON.stringify(obj) + ')');
+        });
         c.on('error', function(evt) {
             console.log('An error occurred: ' + evt.data);
         });
@@ -22,6 +25,7 @@
     </script>
 </head>
 <body>
-    <button onclick="c.send('Hello World!');">Test WebSockets</button>
+    <button onclick="c.send('Hello World!');">Send Hello World</button>
+    <button onclick="c.send({ type: 'test', text: 'Wahoo!' });">Send JSON</button>
 </body>
 </html>

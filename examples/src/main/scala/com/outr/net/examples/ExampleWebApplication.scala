@@ -4,6 +4,7 @@ import com.outr.net.communicate.ConnectionHolder
 import com.outr.net.http.{HttpHandler, WebApplication}
 import com.outr.net.http.tomcat.TomcatApplication
 import com.outr.net.service.Service
+import org.powerscala.json.{TypedSupport, CaseClassSupport}
 import org.powerscala.log.Logging
 import com.outr.net.http.session.MapSession
 import com.outr.net.http.request.HttpRequest
@@ -46,10 +47,18 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
 
     register("/communicate.js", "communicate.js")
 
+    TypedSupport.register("test", classOf[Test])
+
     // Reverse all WebSocket messages received and send back to the browser
     ConnectionHolder.text.on {
       case evt => if (evt.message != "Ping") {
         ConnectionHolder.broadcast(evt.message.reverse)
+      }
+    }
+    ConnectionHolder.json.on {
+      case evt => {
+        println(s"Received: $evt")
+        ConnectionHolder.broadcastJSON(Test("Awesome!"))
       }
     }
 
@@ -72,3 +81,5 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
 case class Receiving(name: String)
 
 case class Sending(name: String)
+
+case class Test(text: String)

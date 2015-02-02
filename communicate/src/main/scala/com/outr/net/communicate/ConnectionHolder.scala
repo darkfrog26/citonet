@@ -2,6 +2,7 @@ package com.outr.net.communicate
 
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.json._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -15,6 +16,7 @@ trait ConnectionHolder extends Listenable {
   val connected = new UnitProcessor[Connection]("connected")
   val text = new UnitProcessor[TextMessage]("text")
   val binary = new UnitProcessor[BinaryMessage]("binary")
+  val json = new UnitProcessor[Any]("json")
   val error = new UnitProcessor[ErrorMessage]("error")
   val disconnected = new UnitProcessor[DisconnectedMessage]("disconnected")
 
@@ -37,6 +39,11 @@ trait ConnectionHolder extends Listenable {
         c.send(message)
       }
     }
+  }
+
+  def broadcastJSON(message: Any, exclude: Connection*) = {
+    val s = toJSON(message).compact
+    broadcast(s"::json::$s", exclude: _*)
   }
 
   def hold(connection: Connection) = connection.holder := this

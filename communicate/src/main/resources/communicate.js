@@ -67,6 +67,10 @@ Communicate.prototype.connect = function() {
     this.socket.onmessage = function(evt) {
         c.lastReceived = Date.now();
         c.fire('message', evt);
+        if (evt.data.indexOf('::json::') == 0) {
+            var obj = JSON.parse(evt.data.substring(8));
+            c.fire('json', obj);
+        }
     };
     this.socket.onerror = function(evt) {
         c.fire('error', evt);
@@ -79,6 +83,9 @@ Communicate.prototype.sendBacklog = function() {
     this.backlog = [];
 };
 Communicate.prototype.send = function(message) {
+    if (typeof message != 'string') {
+        message = '::json::' + JSON.stringify(message);     // Convert non-strings into JSON strings
+    }
     if (this.connected) {
         this.lastSent = Date.now();
         this.socket.send(message);

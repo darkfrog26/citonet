@@ -42,9 +42,11 @@ trait Connection extends Listenable {
     case evt => if (evt.message == "Ping") {              // Default Ping / Pong support
       send("Pong")
     } else if (evt.message.startsWith("::json::")) {      // JSON support
-      val json = evt.message.substring(8)
-      val obj = fromJSON(json)
-      this.json.fire(obj)
+      holder().stack.context(this) {
+        val json = evt.message.substring(8)
+        val obj = fromJSON(json)
+        this.json.fire(obj)
+      }
     }
   }
 

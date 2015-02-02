@@ -55,6 +55,12 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
         ConnectionHolder.broadcast(evt.message.reverse)
       }
     }
+    ConnectionHolder.added.on {
+      case evt => println(s"Connection added! ${ConnectionHolder.connections.size}")
+    }
+    ConnectionHolder.removed.on {
+      case evt => println(s"Connection removed! ${ConnectionHolder.connections.size}")
+    }
     ConnectionHolder.json.on {
       case evt => {
         println(s"Received: $evt")

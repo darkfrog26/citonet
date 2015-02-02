@@ -1,5 +1,6 @@
 package com.outr.net.communicate
 
+import org.powerscala.LocalStack
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
 import org.powerscala.json._
@@ -10,6 +11,9 @@ import org.powerscala.json._
 trait ConnectionHolder extends Listenable {
   private var _connections = Set.empty[Connection]
   def connections = _connections
+  val stack = new LocalStack[Connection]
+
+  def connection = stack()
 
   val added = new UnitProcessor[ConnectionAdded]("connected")
   val removed = new UnitProcessor[ConnectionRemoved]("connected")
@@ -20,13 +24,17 @@ trait ConnectionHolder extends Listenable {
   val error = new UnitProcessor[ErrorMessage]("error")
   val disconnected = new UnitProcessor[DisconnectedMessage]("disconnected")
 
-  added.on {
+  added.on {                              // Add the connection to the set
     case evt => synchronized {
       _connections += evt.connection
     }
   }
 
-  removed.on {
+  disconnected.on {                       // Remove the holder after disconnect
+    case evt => evt.connection.holder := null
+  }
+
+  removed.on {                            // Remove the connection from the set
     case evt => synchronized {
       _connections -= evt.connection
     }

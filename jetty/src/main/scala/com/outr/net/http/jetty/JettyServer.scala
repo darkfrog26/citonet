@@ -1,6 +1,8 @@
 package com.outr.net.http.jetty
 
 import com.outr.net.http.HttpApplication
+import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
 import org.powerscala.log.Logging
 import org.eclipse.jetty.server.Server
 
@@ -17,9 +19,11 @@ class JettyServer(val application: HttpApplication, port: Int = 8080) extends Lo
 
   def start() = {
     server.start()
+    handler.start(server)
   }
 
   def dispose() = {
+    handler.stop()
     server.stop()
     server.destroy()
   }

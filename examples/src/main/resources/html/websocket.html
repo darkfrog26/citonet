@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Testing WebSockets</title>
+    <script src="communicate.js"></script>
+    <script>
+        var c = new Communicate();
+        c.on('message', function(evt) {
+            if (evt.data != 'Pong') {
+                console.log('Received message: ' + evt.data);
+            }
+        });
+        c.on('error', function(evt) {
+            console.log('An error occurred: ' + evt.data);
+        });
+        c.on('open', function(evt) {
+            console.log('Connected!');
+        });
+        c.on('close', function(evt) {
+            console.log('Disconnected!');
+        });
+        c.connect();
+    </script>
+</head>
+<body>
+    <button onclick="c.send('Hello World!');">Test WebSockets</button>
+</body>
+</html>

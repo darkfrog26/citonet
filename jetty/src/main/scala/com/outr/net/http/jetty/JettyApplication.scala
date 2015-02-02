@@ -17,6 +17,7 @@ trait JettyApplication extends HttpApplication {
 
   def start() = {
     server = JettyServer(this, port = port)
+    server.start()
   }
 
   def stop() = {

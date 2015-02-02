@@ -1,6 +1,7 @@
 package com.outr.net.examples
 
-import com.outr.net.http.WebApplication
+import com.outr.net.communicate.ConnectionHolder
+import com.outr.net.http.{HttpHandler, WebApplication}
 import com.outr.net.http.tomcat.TomcatApplication
 import com.outr.net.service.Service
 import org.powerscala.log.Logging
@@ -17,7 +18,7 @@ import org.powerscala.Priority
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ExampleWebApplication extends WebApplication[MapSession] with Logging with TomcatApplication {
+object ExampleWebApplication extends WebApplication[MapSession] with Logging with JettyApplication {
   protected def createSession(request: HttpRequest, id: String) = new MapSession(id, this)
 
   def init() = {
@@ -42,6 +43,15 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
 
     // Add example html files
     addClassPath("/", "html/")
+
+    register("/communicate.js", "communicate.js")
+
+    // Reverse all WebSocket messages received and send back to the browser
+    ConnectionHolder.text.on {
+      case evt => if (evt.message != "Ping") {
+        ConnectionHolder.broadcast(evt.message.reverse)
+      }
+    }
 
     // Service
     val service = Service[Receiving, Sending] {

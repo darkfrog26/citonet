@@ -49,7 +49,7 @@ object OUTRNetBuild extends Build {
 
   // Aggregator
   lazy val root = Project("root", file("."), settings = createSettings("outrnet"))
-    .aggregate(core, service, netty, servlet, jetty, tomcat, proxy)
+    .aggregate(core, service, communicate, netty, servlet, jetty, tomcat, proxy)
 
   // Core
   lazy val core = Project("core", file("core"), settings = createSettings("outrnet-core"))
@@ -60,6 +60,10 @@ object OUTRNetBuild extends Build {
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.PowerScalaJSON))
 
+  // Communicate
+  lazy val communicate = Project("communicate", file("communicate"), settings = createSettings("outrnet-communicate"))
+    .dependsOn(service)
+
   // HTTP Server Implementations
   lazy val netty = Project("netty", file("netty"), settings = createSettings("outrnet-netty"))
     .dependsOn(core)
@@ -68,8 +72,8 @@ object OUTRNetBuild extends Build {
     .dependsOn(core)
     .settings(libraryDependencies ++= Seq(Dependencies.Servlet))
   lazy val jetty = Project("jetty", file("jetty"), settings = createSettings("outrnet-jetty"))
-    .dependsOn(servlet)
-    .settings(libraryDependencies ++= Seq(Dependencies.JettyServer))
+    .dependsOn(servlet, communicate)
+    .settings(libraryDependencies ++= Seq(Dependencies.JettyServer, Dependencies.JettyWebSocketServlet, Dependencies.JettyWebSocketServer))
   lazy val tomcat = Project("tomcat", file("tomcat"), settings = createSettings("outrnet-tomcat"))
     .dependsOn(servlet)
     .settings(libraryDependencies ++= Seq(Dependencies.TomcatCore, Dependencies.TomcatJULI))
@@ -80,14 +84,14 @@ object OUTRNetBuild extends Build {
 
   // Examples
   lazy val examples = Project("examples", file("examples"), settings = createSettings("outrnet-examples") ++ Revolver.settings ++ com.earldouglas.xsbtwebplugin.WebPlugin.webSettings)
-    .dependsOn(core, service, servlet, proxy, jetty, tomcat)
+    .dependsOn(core, service, communicate, servlet, proxy, jetty, tomcat)
     .settings(libraryDependencies ++= Seq(Dependencies.JettyWebapp))
     .settings(mainClass := Some("com.outr.net.examples.ExampleWebApplication"))
 }
 
 object Dependencies {
   private val PowerScalaVersion = "1.6.8-SNAPSHOT"
-  private val JettyVersion = "9.2.5.v20141112"
+  private val JettyVersion = "9.2.7.v20150116"
   private val TomcatVersion = "8.0.17"
 
   val PowerScalaProperty = "org.powerscala" %% "powerscala-property" % PowerScalaVersion
@@ -98,6 +102,8 @@ object Dependencies {
   val CommonsFileUpload = "commons-fileupload" % "commons-fileupload" % "1.3.1"
   val JettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % JettyVersion % "container"
   val JettyServer = "org.eclipse.jetty" % "jetty-server" % JettyVersion
+  val JettyWebSocketServlet = "org.eclipse.jetty.websocket" % "websocket-servlet" % JettyVersion
+  val JettyWebSocketServer = "org.eclipse.jetty.websocket" % "websocket-server" % JettyVersion
   val TomcatCore = "org.apache.tomcat.embed" % "tomcat-embed-core" % TomcatVersion
   val TomcatJULI = "org.apache.tomcat.embed" % "tomcat-embed-logging-juli" % TomcatVersion
   val ScalaTest = "org.scalatest" %% "scalatest" % "2.2.3" % "test"

@@ -48,7 +48,7 @@ abstract class WebApplication[S <: Session] extends SessionApplication[S] with N
 
   def register(path: String, resource: String): Unit = {
     val url = getClass.getClassLoader.getResource(resource)
-    if (url == null) throw new NullPointerException(s"Unable to find resource in classload: $resource.")
+    if (url == null) throw new NullPointerException(s"Unable to find resource in class loader: $resource.")
     addContent(URLContent(url), path)
   }
 

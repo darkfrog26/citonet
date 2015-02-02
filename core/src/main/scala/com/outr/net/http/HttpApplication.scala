@@ -29,6 +29,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 
   def initialized = _initialized
   def isRunning = running
+  def webSocketPath: Option[String] = Some("/websocket")
 
   /**
    * The frequency the application will be updated in seconds.

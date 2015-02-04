@@ -11,9 +11,6 @@ import org.powerscala.json._
 trait ConnectionHolder extends Listenable {
   private var _connections = Set.empty[Connection]
   def connections = _connections
-  val stack = new LocalStack[Connection]
-
-  def connection = stack()
 
   val added = new UnitProcessor[ConnectionAdded]("connected")
   val removed = new UnitProcessor[ConnectionRemoved]("connected")
@@ -69,4 +66,8 @@ case class ErrorMessage(cause: Throwable, connection: Connection)
 
 case class DisconnectedMessage(statusCode: Int, reason: String, connection: Connection)
 
-object ConnectionHolder extends ConnectionHolder
+object ConnectionHolder extends ConnectionHolder {
+  val stack = new LocalStack[Connection]
+
+  def connection = stack()
+}

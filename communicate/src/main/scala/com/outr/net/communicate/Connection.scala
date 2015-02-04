@@ -2,13 +2,14 @@ package com.outr.net.communicate
 
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.log.Logging
 import org.powerscala.property.Property
 import org.powerscala.json._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait Connection extends Listenable {
+trait Connection extends Listenable with Logging {
   val holder = Property[ConnectionHolder]()
 
   val connected = new UnitProcessor[Connection]("connected")
@@ -19,6 +20,11 @@ trait Connection extends Listenable {
   val disconnected = new UnitProcessor[DisconnectedMessage]("disconnected")
 
   def send(message: String): Unit
+
+  def sendJSON(message: Any) = {
+    val s = toJSON(message).compact
+    send(s)
+  }
 
   holder.change.on {
     case evt => {
@@ -42,10 +48,14 @@ trait Connection extends Listenable {
     case evt => if (evt.message == "Ping") {              // Default Ping / Pong support
       send("Pong")
     } else if (evt.message.startsWith("::json::")) {      // JSON support
-      holder().stack.context(this) {
-        val json = evt.message.substring(8)
-        val obj = fromJSON(json)
-        this.json.fire(obj)
+      try {
+        ConnectionHolder.stack.context(this) {
+          val json = evt.message.substring(8)
+          val obj = fromJSON(json)
+          this.json.fire(obj)
+        }
+      } catch {
+        case t: Throwable => error("Error parsing JSON message from browser.", t)
       }
     }
   }

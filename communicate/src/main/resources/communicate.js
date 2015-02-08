@@ -16,6 +16,13 @@ var Communicate = function(settings) {
     this.verifyDefault('path', '/websocket');
     this.verifyDefault('pingDelay', 60000);
     this.verifyDefault('updateFrequency', 10000);
+
+    var c = this;
+
+    // Make sure the socket closes during unload of page
+    window.onbeforeunload = function() {
+        c.disconnect();
+    };
 };
 Communicate.prototype.listeners = {};
 Communicate.prototype.on = function(key, f) {
@@ -75,6 +82,11 @@ Communicate.prototype.connect = function() {
     this.socket.onerror = function(evt) {
         c.fire('error', evt);
     };
+};
+Communicate.prototype.disconnect = function() {
+    if (this.connected) {
+        this.socket.close();
+    }
 };
 Communicate.prototype.sendBacklog = function() {
     for (var i = 0; i < this.backlog.length; i++) {

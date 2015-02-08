@@ -36,7 +36,7 @@ class JettyHandler private[jetty](val application: HttpApplication) extends Abst
 }
 
 class WebSocketContextHandler(handle: JettyHandler) extends ServletContextHandler(ServletContextHandler.SESSIONS) {
-  val servlet = new JettyWebSocketServlet
+  val servlet = new JettyWebSocketServlet(handle)
 
   setContextPath("/")
   addServlet(new ServletHolder(servlet), "/websocket")

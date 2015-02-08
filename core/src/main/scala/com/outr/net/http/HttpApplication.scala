@@ -17,7 +17,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
   /**
    * Option[HttpRequest]
    */
-  def requestOption = HttpApplication.request.get()
+  def requestOption = HttpApplication.requestOption
 
   def request = requestOption.getOrElse(throw new RuntimeException("HttpRequest is not defined on the current thread. Use requestOption instead."))
 
@@ -67,7 +67,7 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
    * @param request the request that is being handled
    * @param f the function to manage the request / response process.
    */
-  def around[R](request: HttpRequest)(f: => R): R = f
+  def around[R](request: HttpRequest)(f: => R): R = HttpApplication.around[R](request)(f)
 
   /**
    * Called once when the application is terminating (not guaranteed to be executed).
@@ -81,18 +81,20 @@ trait HttpApplication extends Listenable with HttpHandler with Updatable with Di
 }
 
 object HttpApplication {
-  private val request = new ThreadLocal[Option[HttpRequest]] {
+  private val _request = new ThreadLocal[Option[HttpRequest]] {
     override def initialValue() = None
   }
+
+  def requestOption = _request.get()
 
   def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz")
 
   def around[R](request: HttpRequest)(f: => R): R = {
-    this.request.set(Option(request))
+    _request.set(Option(request))
     try {
       f
     } finally {
-      this.request.set(None)
+      _request.set(None)
     }
   }
 }

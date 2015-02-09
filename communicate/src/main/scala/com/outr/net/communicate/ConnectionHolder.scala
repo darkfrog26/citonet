@@ -12,6 +12,8 @@ trait ConnectionHolder extends Listenable {
   private var _connections = Set.empty[Connection]
   def connections = _connections
 
+  private var backlog = List.empty[String]
+
   val addedConnection = new UnitProcessor[ConnectionAdded]("connected")
   val removedConnection = new UnitProcessor[ConnectionRemoved]("connected")
   val connected = new UnitProcessor[Connection]("connected")
@@ -24,6 +26,7 @@ trait ConnectionHolder extends Listenable {
   addedConnection.on {                              // Add the connection to the set
     case evt => synchronized {
       _connections += evt.connection
+      sendBacklog()
     }
   }
 
@@ -37,11 +40,30 @@ trait ConnectionHolder extends Listenable {
     }
   }
 
+  private def sendBacklog() = if (backlog.nonEmpty) {
+    synchronized {
+      backlog.reverse.foreach {
+        case message => {
+          connections.foreach {
+            case c => c.send(message)
+          }
+        }
+      }
+      backlog = List.empty[String]
+    }
+  }
+
   def broadcast(message: String, exclude: Connection*) = {
-    val exclusions = exclude.toSet
-    connections.foreach {
-      case c => if (!exclusions.contains(c)) {
-        c.send(message)
+    if (connections.isEmpty) {      // Backlog if there are no connections
+      synchronized {
+        backlog = message :: backlog
+      }
+    } else {
+      val exclusions = exclude.toSet
+      connections.foreach {
+        case c => if (!exclusions.contains(c)) {
+          c.send(message)
+        }
       }
     }
   }

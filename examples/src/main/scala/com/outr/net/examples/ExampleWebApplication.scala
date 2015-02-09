@@ -50,18 +50,18 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
     TypedSupport.register("test", classOf[Test])
 
     // Reverse all WebSocket messages received and send back to the browser
-    ConnectionHolder.text.on {
+    ConnectionHolder.textEvent.on {
       case evt => if (evt.message != "Ping") {
         ConnectionHolder.broadcast(evt.message.reverse)
       }
     }
-    ConnectionHolder.added.on {
+    ConnectionHolder.addedConnection.on {
       case evt => println(s"Connection added! ${ConnectionHolder.connections.size}")
     }
-    ConnectionHolder.removed.on {
+    ConnectionHolder.removedConnection.on {
       case evt => println(s"Connection removed! ${ConnectionHolder.connections.size}")
     }
-    ConnectionHolder.json.on {
+    ConnectionHolder.jsonEvent.on {
       case evt => {
         println(s"Received: $evt")
         ConnectionHolder.broadcastJSON(Test("Awesome!"))

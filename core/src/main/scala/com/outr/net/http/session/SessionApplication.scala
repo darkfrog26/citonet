@@ -47,24 +47,33 @@ trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
 
   class SessionCreateHandler extends HttpHandler {
     def onReceive(request: HttpRequest, response: HttpResponse) = SessionApplication.this.synchronized {
-      val session = request.cookie(cookieName) match {      // Find the cookie for the session
-        case Some(cookie) => {                // Cookie found
-          val id = cookie.value
-          _sessions.get(id) match {
-            case Some(s) => s
-            case None => createSession(request, id)
-          }
-        }
-        case None => {
-          val id = Unique()
-          createSession(request, id)
-        }
+      val session = lookupSession(request) match {
+        case Some(s) => s
+        case None => createSession(request, Unique())
       }
       session.checkIn()     // Keep the session from timing out
-      _sessions += session.id -> session
-      request.store(storeToken) = session
-      response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years, domain = request.url.domain))
+      storeSession(request, session)
+      val domain = request.url.domain match {
+        case "localhost" => null
+        case d => d
+      }
+      response.setCookie(Cookie(name = cookieName, value = session.id, maxAge = 1.years, domain = domain))
     }
+  }
+
+  def lookupAndStoreSession(request: HttpRequest) = lookupSession(request) match {
+    case Some(session) => {
+      session.checkIn()
+      storeSession(request, session)
+    }
+    case None => // no session
+  }
+
+  def lookupSession(request: HttpRequest) = request.cookie(cookieName).map(c => _sessions.get(c.value)).flatten
+
+  def storeSession(request: HttpRequest, session: S) = SessionApplication.this.synchronized {
+    _sessions += session.id -> session
+    request.store(storeToken) = session
   }
 
   class Sessions private[session]() {

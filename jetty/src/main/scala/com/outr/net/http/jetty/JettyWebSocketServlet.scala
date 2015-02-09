@@ -5,6 +5,7 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import com.outr.net.communicate._
 import com.outr.net.http.HttpApplication
 import com.outr.net.http.servlet.ServletConversion
+import com.outr.net.http.session.SessionApplication
 import org.eclipse.jetty.websocket.api.{Session, WebSocketListener}
 import org.eclipse.jetty.websocket.servlet.{WebSocketServletFactory, WebSocketServlet}
 import org.powerscala.log.Logging
@@ -25,6 +26,11 @@ class JettyWebSocketServlet(handler: JettyHandler) extends WebSocketServlet with
         error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
         throw t
       }
+    }
+    // Make sure the session is available in the WebSocket
+    handler.application match {
+      case sa: SessionApplication[_] => sa.lookupAndStoreSession(request)
+      case _ => // Ignore non Session application
     }
     handler.application.around(request) {
       super.service(servletRequest, servletResponse)
@@ -49,7 +55,7 @@ class JettyWebSocket extends WebSocketListener with Logging with Connection {
   override def onWebSocketText(message: String) = {
     debug(s"onWebSocketTest: $message")
     HttpApplication.around(request) {
-      text.fire(TextMessage(message, this))
+      textEvent.fire(TextMessage(message, this))
     }
   }
 
@@ -60,14 +66,14 @@ class JettyWebSocket extends WebSocketListener with Logging with Connection {
   override def onWebSocketBinary(payload: Array[Byte], offset: Int, len: Int) = {
     debug(s"onWebSocketBinary!")
     HttpApplication.around(request) {
-      binary.fire(BinaryMessage(payload, offset, len, this))
+      binaryEvent.fire(BinaryMessage(payload, offset, len, this))
     }
   }
 
   override def onWebSocketError(cause: Throwable) = {
     debug(s"onWebSocketError", cause)
     HttpApplication.around(request) {
-      error.fire(ErrorMessage(cause, this))
+      errorEvent.fire(ErrorMessage(cause, this))
     }
   }
 
@@ -75,7 +81,7 @@ class JettyWebSocket extends WebSocketListener with Logging with Connection {
     debug(s"onWebSocketClose: $statusCode: $reason")
     this.session = null
     HttpApplication.around(request) {
-      disconnected.fire(DisconnectedMessage(statusCode, reason, this))
+      disconnectedEvent.fire(DisconnectedMessage(statusCode, reason, this))
     }
   }
 }

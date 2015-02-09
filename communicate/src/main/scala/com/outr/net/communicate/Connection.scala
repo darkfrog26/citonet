@@ -13,11 +13,11 @@ trait Connection extends Listenable with Logging {
   val holder = Property[ConnectionHolder]()
 
   val connected = new UnitProcessor[Connection]("connected")
-  val text = new UnitProcessor[TextMessage]("text")
-  val binary = new UnitProcessor[BinaryMessage]("binary")
-  val json = new UnitProcessor[Any]("json")
-  val error = new UnitProcessor[ErrorMessage]("error")
-  val disconnected = new UnitProcessor[DisconnectedMessage]("disconnected")
+  val textEvent = new UnitProcessor[TextMessage]("text")
+  val binaryEvent = new UnitProcessor[BinaryMessage]("binary")
+  val jsonEvent = new UnitProcessor[Any]("json")
+  val errorEvent = new UnitProcessor[ErrorMessage]("error")
+  val disconnectedEvent = new UnitProcessor[DisconnectedMessage]("disconnected")
 
   def send(message: String): Unit
 
@@ -29,22 +29,22 @@ trait Connection extends Listenable with Logging {
   holder.change.on {
     case evt => {
       if (evt.oldValue != null) {
-        evt.oldValue.removed.fire(ConnectionRemoved(this))
+        evt.oldValue.removedConnection.fire(ConnectionRemoved(this))
       }
       if (evt.newValue != null) {
-        evt.newValue.added.fire(ConnectionAdded(evt.oldValue, this))
+        evt.newValue.addedConnection.fire(ConnectionAdded(evt.oldValue, this))
       }
     }
   }
 
   connected.on(holder().connected.fire(_))
-  text.on(holder().text.fire(_))
-  binary.on(holder().binary.fire(_))
-  json.on(holder().json.fire(_))
-  error.on(holder().error.fire(_))
-  disconnected.on(holder().disconnected.fire(_))
+  textEvent.on(holder().textEvent.fire(_))
+  binaryEvent.on(holder().binaryEvent.fire(_))
+  jsonEvent.on(holder().jsonEvent.fire(_))
+  errorEvent.on(holder().errorEvent.fire(_))
+  disconnectedEvent.on(holder().disconnectedEvent.fire(_))
 
-  text.on {
+  textEvent.on {
     case evt => if (evt.message == "Ping") {              // Default Ping / Pong support
       send("Pong")
     } else if (evt.message.startsWith("::json::")) {      // JSON support
@@ -52,7 +52,7 @@ trait Connection extends Listenable with Logging {
         ConnectionHolder.stack.context(this) {
           val json = evt.message.substring(8)
           val obj = fromJSON(json)
-          this.json.fire(obj)
+          this.jsonEvent.fire(obj)
         }
       } catch {
         case t: Throwable => error("Error parsing JSON message from browser.", t)

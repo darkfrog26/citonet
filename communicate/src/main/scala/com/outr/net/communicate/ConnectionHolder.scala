@@ -12,26 +12,26 @@ trait ConnectionHolder extends Listenable {
   private var _connections = Set.empty[Connection]
   def connections = _connections
 
-  val added = new UnitProcessor[ConnectionAdded]("connected")
-  val removed = new UnitProcessor[ConnectionRemoved]("connected")
+  val addedConnection = new UnitProcessor[ConnectionAdded]("connected")
+  val removedConnection = new UnitProcessor[ConnectionRemoved]("connected")
   val connected = new UnitProcessor[Connection]("connected")
-  val text = new UnitProcessor[TextMessage]("text")
-  val binary = new UnitProcessor[BinaryMessage]("binary")
-  val json = new UnitProcessor[Any]("json")
-  val error = new UnitProcessor[ErrorMessage]("error")
-  val disconnected = new UnitProcessor[DisconnectedMessage]("disconnected")
+  val textEvent = new UnitProcessor[TextMessage]("text")
+  val binaryEvent = new UnitProcessor[BinaryMessage]("binary")
+  val jsonEvent = new UnitProcessor[Any]("json")
+  val errorEvent = new UnitProcessor[ErrorMessage]("error")
+  val disconnectedEvent = new UnitProcessor[DisconnectedMessage]("disconnected")
 
-  added.on {                              // Add the connection to the set
+  addedConnection.on {                              // Add the connection to the set
     case evt => synchronized {
       _connections += evt.connection
     }
   }
 
-  disconnected.on {                       // Remove the holder after disconnect
+  disconnectedEvent.on {                       // Remove the holder after disconnect
     case evt => evt.connection.holder := null
   }
 
-  removed.on {                            // Remove the connection from the set
+  removedConnection.on {                            // Remove the connection from the set
     case evt => synchronized {
       _connections -= evt.connection
     }

@@ -11,11 +11,14 @@ var Communicate = function(settings) {
     this.lastConnected = 0;
     this.lastSent = 0;
     this.lastReceived = 0;
+    this.keepAlive = true;
 
     this.verifyDefault('host', window.location.host);
     this.verifyDefault('path', '/websocket');
     this.verifyDefault('pingDelay', 60000);
     this.verifyDefault('updateFrequency', 10000);
+    this.verifyDefault('reconnect', true);
+    this.verifyDefault('reconnectDelay', 5000);
 
     var c = this;
 
@@ -46,11 +49,8 @@ Communicate.prototype.verifyDefault = function(key, def) {
         this.settings[key] = def;
     }
 };
-Communicate.prototype.setting = function(key, def) {
-    if (this.settings && this.settings[key]) {
-        return this.settings[key];
-    }
-    return def;
+Communicate.prototype.setting = function(key) {
+    return this.settings[key];
 };
 Communicate.prototype.connect = function() {
     var host = this.setting('host');
@@ -70,6 +70,12 @@ Communicate.prototype.connect = function() {
     this.socket.onclose = function(evt) {
         c.connected = false;
         c.fire('close', evt);
+        if (c.setting('reconnect') && c.keepAlive) {
+            setTimeout(function() {
+                console.log('Trying to reconnect...');
+                c.connect.call(c);
+            }, c.setting('reconnectDelay'));
+        }
     };
     this.socket.onmessage = function(evt) {
         c.lastReceived = Date.now();
@@ -84,6 +90,7 @@ Communicate.prototype.connect = function() {
     };
 };
 Communicate.prototype.disconnect = function() {
+    this.keepAlive = false;
     if (this.connected) {
         this.socket.close();
     }

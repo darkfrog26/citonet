@@ -92,4 +92,6 @@ object ConnectionHolder extends ConnectionHolder {
   val stack = new LocalStack[Connection]
 
   def connection = stack()
+
+  override def toString = "ConnectionHolder$"
 }

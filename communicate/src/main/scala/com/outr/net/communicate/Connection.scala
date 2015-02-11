@@ -23,7 +23,7 @@ trait Connection extends Listenable with Logging {
 
   def sendJSON(message: Any) = {
     val s = toJSON(message).compact
-    send(s)
+    send(s"::json::$s")
   }
 
   holder.change.on {

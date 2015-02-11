@@ -53,7 +53,7 @@ class JettyWebSocket extends WebSocketListener with Logging with Connection {
   }
 
   override def onWebSocketText(message: String) = {
-    debug(s"onWebSocketTest: $message")
+    debug(s"onWebSocketText: $message, holder: ${holder()}")
     HttpApplication.around(request) {
       textEvent.fire(TextMessage(message, this))
     }

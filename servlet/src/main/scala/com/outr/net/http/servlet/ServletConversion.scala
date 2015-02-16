@@ -35,7 +35,10 @@ object ServletConversion extends Logging {
     }.toMap)
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
     val method = Method(servletRequest.getMethod)
-    val headers = HttpRequestHeaders(servletRequest.getHeaderNames.map(name => name -> servletRequest.getHeader(name)).toMap)
+
+    val headerMap = servletRequest.getHeaderNames.map{ name => name -> getSanitizedHeader(name, servletRequest)}.toMap
+
+    val headers = HttpRequestHeaders(headerMap)
     val cookies = headers.parseCookies()
     val remoteAddress = IP(servletRequest.getRemoteAddr)
     val remoteHost = servletRequest.getRemoteHost
@@ -57,6 +60,16 @@ object ServletConversion extends Logging {
     } else {
       request
     }
+  }
+
+  /**
+   * If a header's value is empty, Jetty 9 returns a null value according to this: http://dev.eclipse.org/mhonarc/lists/jetty-users/msg03338.html
+   * However, this contradicts the Java EE spec which says that a null return value means that the header is not present.
+   * So we sanitise the return value of Jetty 9 to be non-null. This also avoids null propogation throught the code base.
+   */
+  private def getSanitizedHeader(name:String, servletRequest: javax.servlet.http.HttpServletRequest) = {
+    val value = servletRequest.getHeader(name)
+    if (value == null) "" else value
   }
 
   def convert(request: HttpRequest,

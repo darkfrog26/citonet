@@ -60,7 +60,7 @@ class JettyWebSocket extends WebSocketListener with Logging with Connection {
   }
 
   def send(message: String) = if (session != null) {
-    session.getRemote.sendString(message)
+    session.getRemote.sendStringByFuture(message)
   }
 
   override def onWebSocketBinary(payload: Array[Byte], offset: Int, len: Int) = {

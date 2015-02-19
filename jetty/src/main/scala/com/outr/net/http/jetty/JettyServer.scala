@@ -10,20 +10,22 @@ import org.eclipse.jetty.server.Server
  * @author Matt Hicks <matt@outr.com>
  */
 class JettyServer(val application: HttpApplication, port: Int = 8080) extends Logging {
-  private val handler = new JettyHandler(application)
   private val server = new Server(port)
-  server.setHandler(handler)
+  private val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
+  context.setContextPath("/")
+  server.setHandler(context)
+  private val servlet = new JettyOUTRNetServlet
+  servlet.init(application)
+  context.addServlet(new ServletHolder(servlet), "/*")
 
   application.initialize()
   info(s"Initialized ${application.getClass} as application for jetty successfully on port $port.")
 
   def start() = {
     server.start()
-    handler.start(server)
   }
 
   def dispose() = {
-    handler.stop()
     server.stop()
     server.destroy()
   }

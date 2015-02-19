@@ -11,36 +11,53 @@ import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
  * @author Matt Hicks <matt@outr.com>
  */
 class OUTRNetServlet extends HttpServlet with Logging {
-  private var application: HttpApplication = _
+  val support = new OUTRNetServletSupport
 
   def init(application: HttpApplication) = {
-    this.application = application
+    support.init(application)
+  }
+
+  override def init(config: ServletConfig) = {
+    support.init(config)
+  }
+
+  override def destroy() = {
+    support.destroy()
+
+    super.destroy()
+  }
+
+  override def service(request: HttpServletRequest, response: HttpServletResponse) = {
+    support.handle(request, response)
+  }
+}
+
+final class OUTRNetServletSupport extends Logging {
+  private var _application: HttpApplication = _
+  def application = _application
+
+  def init(application: HttpApplication): Unit = {
+    _application = application
     application.initialize()
     info(s"Initialized ${application} as application for servlet successfully.")
   }
 
-  override def init(config: ServletConfig) = if (application == null) {
+  def init(config: ServletConfig): Unit = if (application == null) {
     val applicationClass = config.getInitParameter("application")
     val clazz: EnhancedClass = Class.forName(applicationClass)
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
     init(companion.asInstanceOf[HttpApplication])
   }
 
-  override def destroy() = {
+  def destroy() = {
     try {
       application.dispose()
     } catch {
       case t: Throwable => error(s"Exception thrown while attempting to dispose application.", t)
     }
-
-    super.destroy()
   }
 
-  override def doGet(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
-    OUTRNetServlet.handle(application, servletRequest, servletResponse)
-  }
-
-  override def doPost(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
+  def handle(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
     OUTRNetServlet.handle(application, servletRequest, servletResponse)
   }
 }

@@ -1,45 +1,74 @@
 package com.outr.net.http.jetty
 
+import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 
 import com.outr.net.communicate._
 import com.outr.net.http.HttpApplication
-import com.outr.net.http.servlet.ServletConversion
+import com.outr.net.http.servlet.{ServletConversion, OUTRNetServletSupport}
 import com.outr.net.http.session.SessionApplication
 import org.eclipse.jetty.websocket.api.{Session, WebSocketListener}
-import org.eclipse.jetty.websocket.servlet.{WebSocketServletFactory, WebSocketServlet}
+import org.eclipse.jetty.websocket.servlet._
 import org.powerscala.log.Logging
 
 /**
+ * JettyOUTRNetServlet expands OUTRNetServlet functionality to add additional features specific to Jetty including
+ * WebSocket support.
+ *
  * @author Matt Hicks <matt@outr.com>
  */
-class JettyWebSocketServlet(handler: JettyHandler) extends WebSocketServlet with Logging {
+class JettyOUTRNetServlet extends WebSocketServlet with WebSocketCreator with Logging {
+  val support = new OUTRNetServletSupport
+
   override def configure(factory: WebSocketServletFactory) = {
-    factory.register(classOf[JettyWebSocket])
+    factory.setCreator(this)
+  }
+
+  def init(application: HttpApplication) = {
+    support.init(application)
+  }
+
+  override def init(config: ServletConfig) = {
+    support.init(config)
+
+    super.init(config)
+  }
+
+  override def destroy() = {
+    support.destroy()
+
+    super.destroy()
   }
 
   override def service(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
+    if (servletRequest.getRequestURI == support.application.webSocketPath.orNull) {    // WebSocket
     val request = try {
-      ServletConversion.convert(servletRequest)
-    } catch {
-      case t: Throwable => {
-        error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
-        throw t
+        ServletConversion.convert(servletRequest)
+      } catch {
+        case t: Throwable => {
+          error(s"Error occurred while parsing request: ${servletRequest.getRequestURL}", t)
+          throw t
+        }
       }
+      // Make sure the session is available in the WebSocket
+      support.application match {
+        case sa: SessionApplication[_] => sa.lookupAndStoreSession(request)
+        case _ => // Ignore non Session application
+      }
+      support.application.around(request) {
+        super.service(servletRequest, servletResponse)
+      }
+    } else {                                                                          // All other requests
+      support.handle(servletRequest, servletResponse)
     }
-    // Make sure the session is available in the WebSocket
-    handler.application match {
-      case sa: SessionApplication[_] => sa.lookupAndStoreSession(request)
-      case _ => // Ignore non Session application
-    }
-    handler.application.around(request) {
-      super.service(servletRequest, servletResponse)
-    }
+  }
+
+  override def createWebSocket(request: ServletUpgradeRequest, response: ServletUpgradeResponse) = {
+    new JettyWebSocket(support.application)
   }
 }
 
-class JettyWebSocket extends WebSocketListener with Logging with Connection {
-  // TODO: investigate WebSocketCreator to take the place of this (factory.setCreator(...)) - http://stackoverflow.com/questions/15111571/jetty-9-websocketlistener-beforeconnect/15116450#15116450
+class JettyWebSocket(application: HttpApplication) extends WebSocketListener with Logging with Connection {
   val request = HttpApplication.requestOption.getOrElse(throw new RuntimeException(s"Request not found!"))
 
   private var session: Session = _

@@ -1,5 +1,6 @@
 package com.outr.net.communicate
 
+import com.outr.net.http.HttpApplication
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
 import org.powerscala.log.Logging
@@ -10,6 +11,7 @@ import org.powerscala.json._
  * @author Matt Hicks <matt@outr.com>
  */
 trait Connection extends Listenable with Logging {
+  def application: HttpApplication
   val holder = Property[ConnectionHolder]()
 
   val connected = new UnitProcessor[Connection]("connected")

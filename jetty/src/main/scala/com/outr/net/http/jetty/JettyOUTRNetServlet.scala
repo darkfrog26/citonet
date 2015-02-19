@@ -68,7 +68,7 @@ class JettyOUTRNetServlet extends WebSocketServlet with WebSocketCreator with Lo
   }
 }
 
-class JettyWebSocket(application: HttpApplication) extends WebSocketListener with Logging with Connection {
+class JettyWebSocket(val application: HttpApplication) extends WebSocketListener with Logging with Connection {
   val request = HttpApplication.requestOption.getOrElse(throw new RuntimeException(s"Request not found!"))
 
   private var session: Session = _

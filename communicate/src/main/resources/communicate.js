@@ -61,6 +61,7 @@ Communicate.prototype.connect = function() {
     this.socket.onopen = function(evt) {
         c.connected = true;
         c.lastConnected = Date.now();
+        c.fire('init', evt);
         c.sendBacklog();                        // Clear the backlog before we fire the event
         c.fire('open', evt);
         if (!c.updater) {

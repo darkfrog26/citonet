@@ -50,14 +50,25 @@ trait Connection extends Listenable with Logging {
     case evt => if (evt.message == "Ping") {              // Default Ping / Pong support
       send("Pong")
     } else if (evt.message.startsWith("::json::")) {      // JSON support
-      try {
-        ConnectionHolder.stack.context(this) {
+      ConnectionHolder.stack.context(this) {
+        try {
           val json = evt.message.substring(8)
-          val obj = fromJSON(json)
-          this.jsonEvent.fire(obj)
+          val obj = try {
+            fromJSON(json)
+          } catch {
+            case t: Throwable => {
+              error(s"Error parsing JSON message from browser: ${evt.message}.", t)
+              throw t
+            }
+          }
+          try {
+            this.jsonEvent.fire(obj)
+          } catch {
+            case t: Throwable => error(s"Error handling JSON event from browser ($json).", t)
+          }
+        } catch {
+          case t2: Throwable => // Ignore re-throw
         }
-      } catch {
-        case t: Throwable => error("Error parsing JSON message from browser.", t)
       }
     }
   }

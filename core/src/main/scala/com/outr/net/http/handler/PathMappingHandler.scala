@@ -12,7 +12,7 @@ private class PathMappingHandler extends HttpHandler {
   private var map = Map.empty[String, HttpHandler]
 
   def onReceive(request: HttpRequest, response: HttpResponse) = if (response.status == HttpResponseStatus.NotFound) {
-    map.get(request.url.path) match {
+    map.get(request.url.decoded.path) match {
       case Some(handler) => handler.onReceive(request, response)
       case None => response
     }

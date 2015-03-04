@@ -56,39 +56,43 @@ Communicate.prototype.connect = function() {
     var host = this.setting('host');
     var path = this.setting('path');
     var url = 'ws://' + host + path;
-    this.socket = new WebSocket(url);
-    var c = this;
-    this.socket.onopen = function(evt) {
-        c.connected = true;
-        c.lastConnected = Date.now();
-        c.fire('init', evt);
-        c.sendBacklog();                        // Clear the backlog before we fire the event
-        c.fire('open', evt);
-        if (!c.updater) {
-            c.update();
-        }
-    };
-    this.socket.onclose = function(evt) {
-        c.connected = false;
-        c.fire('close', evt);
-        if (c.setting('reconnect') && c.keepAlive) {
-            setTimeout(function() {
-                console.log('Trying to reconnect...');
-                c.connect.call(c);
-            }, c.setting('reconnectDelay'));
-        }
-    };
-    this.socket.onmessage = function(evt) {
-        c.lastReceived = Date.now();
-        c.fire('message', evt);
-        if (evt.data.indexOf('::json::') == 0) {
-            var obj = JSON.parse(evt.data.substring(8));
-            c.fire('json', obj);
-        }
-    };
-    this.socket.onerror = function(evt) {
-        c.fire('error', evt);
-    };
+    try {
+        this.socket = new WebSocket(url);
+        var c = this;
+        this.socket.onopen = function (evt) {
+            c.connected = true;
+            c.lastConnected = Date.now();
+            c.fire('init', evt);
+            c.sendBacklog();                        // Clear the backlog before we fire the event
+            c.fire('open', evt);
+            if (!c.updater) {
+                c.update();
+            }
+        };
+        this.socket.onclose = function (evt) {
+            c.connected = false;
+            c.fire('close', evt);
+            if (c.setting('reconnect') && c.keepAlive) {
+                setTimeout(function () {
+                    console.log('Trying to reconnect...');
+                    c.connect.call(c);
+                }, c.setting('reconnectDelay'));
+            }
+        };
+        this.socket.onmessage = function (evt) {
+            c.lastReceived = Date.now();
+            c.fire('message', evt);
+            if (evt.data.indexOf('::json::') == 0) {
+                var obj = JSON.parse(evt.data.substring(8));
+                c.fire('json', obj);
+            }
+        };
+        this.socket.onerror = function (evt) {
+            c.fire('error', evt);
+        };
+    } catch(err) {
+        console.log('Error connecting socket: ' + err.message);
+    }
 };
 Communicate.prototype.disconnect = function() {
     this.keepAlive = false;

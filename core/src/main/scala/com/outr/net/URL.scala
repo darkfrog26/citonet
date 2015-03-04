@@ -1,6 +1,6 @@
 package com.outr.net
 
-import java.net.URLEncoder
+import java.net.{URLDecoder, URLEncoder}
 import java.net
 import org.powerscala.IO
 import com.outr.net.http.HttpParameters
@@ -16,7 +16,8 @@ case class URL(protocol: Protocol = Protocol.Http,
                ip: IP = IP.LocalHost,
                path: String = "/",
                parameters: HttpParameters = HttpParameters.Empty,
-               hash: String = null) extends HasHostAndPort with HasIP {
+               hash: String = null,
+               isEncoded: Boolean = true) extends HasHostAndPort with HasIP {
   lazy val base = if (protocol != null) {
     if (host != null) {
       s"$protocol://$hostPort"
@@ -65,6 +66,18 @@ case class URL(protocol: Protocol = Protocol.Http,
   }
 
   override def toString = s
+
+  def encoded = if (isEncoded) {
+    this
+  } else {
+    copy(path = URLEncoder.encode(path, "UTF-8"), isEncoded = true)   // TODO: encode more than just path
+  }
+
+  def decoded = if (isEncoded) {
+    copy(path = URLDecoder.decode(path, "UTF-8"), isEncoded = false)  // TODO: decode more than just path
+  } else {
+    this
+  }
 }
 
 object URL {

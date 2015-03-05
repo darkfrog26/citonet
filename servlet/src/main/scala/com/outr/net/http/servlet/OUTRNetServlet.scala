@@ -2,10 +2,12 @@ package com.outr.net.http.servlet
 
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 import javax.servlet.ServletConfig
+import org.powerscala.Storage
 import org.powerscala.reflect.EnhancedClass
 import com.outr.net.http.HttpApplication
 import org.powerscala.log.{Level, Logging}
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
+import scala.collection.JavaConversions._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -46,7 +48,14 @@ final class OUTRNetServletSupport extends Logging {
     val applicationClass = config.getInitParameter("application")
     val clazz: EnhancedClass = Class.forName(applicationClass)
     val companion = clazz.instance.getOrElse(throw new RuntimeException(s"Unable to find companion object for $clazz"))
-    init(companion.asInstanceOf[HttpApplication])
+    val application = companion.asInstanceOf[HttpApplication]
+    config.getServletContext.getAttributeNames.foreach {
+      case attributeName => Storage.set(application, s"attribute:$attributeName", config.getServletContext.getAttribute(attributeName))
+    }
+    config.getInitParameterNames.foreach {
+      case paramName => Storage.set(application, s"param:$paramName", config.getInitParameter(paramName))
+    }
+    init(application)
   }
 
   def destroy() = {

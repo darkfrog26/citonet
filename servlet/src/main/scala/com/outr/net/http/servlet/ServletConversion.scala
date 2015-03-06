@@ -26,6 +26,8 @@ object ServletConversion extends Logging {
   def convert(servletRequest: javax.servlet.http.HttpServletRequest) = {
     val requestURL = servletRequest.getRequestURL.toString
     val contentType = ContentType.parse(servletRequest.getContentType)
+    val method = Method(servletRequest.getMethod)
+
     val content = servletRequest.getInputStream match {
       case null => None
       case input => Some(InputStreamContent(input, contentType, servletRequest.getContentLength, lastModified = -1L))
@@ -34,7 +36,6 @@ object ServletConversion extends Logging {
       case (name, values) => name -> values.toList
     }.toMap)
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
-    val method = Method(servletRequest.getMethod)
 
     val headerMap = servletRequest.getHeaderNames.map{ name => name -> getSanitizedHeader(name, servletRequest)}.toMap
 

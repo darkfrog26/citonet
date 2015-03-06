@@ -75,7 +75,7 @@ object ExampleWebApplication extends WebApplication[MapSession] with Logging wit
         Sending(receiving.name.reverse)
       }
     }
-    service.bindTo(this)
+    service.bindTo(this, "/reverse")
   }
 
   override def dispose() = {

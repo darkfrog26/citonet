@@ -1,11 +1,13 @@
 package com.outr.net.service
 
+import com.outr.net.Method
 import com.outr.net.http.content.{ContentType, StringContent}
 import com.outr.net.http.handler.PathMappingHandler
 import com.outr.net.http.session.Session
 import com.outr.net.http.{WebApplication, HttpHandler}
 import com.outr.net.http.request.HttpRequest
 import com.outr.net.http.response.{HttpResponseStatus, HttpResponse}
+import org.json4s.JsonAST.JString
 
 import org.powerscala.json._
 import org.powerscala.log.Logging
@@ -15,7 +17,7 @@ import org.powerscala.reflect._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class Service[In <: AnyRef, Out](implicit inManifest: Manifest[In], outManifest: Manifest[Out]) extends HttpHandler with Logging {
+abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: Manifest[Out]) extends HttpHandler with Logging {
   val pretty = Property[Boolean](default = Some(false))
 
   val inHttpRequestCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpRequest]))
@@ -26,8 +28,8 @@ abstract class Service[In <: AnyRef, Out](implicit inManifest: Manifest[In], out
 
   override def onReceive(request: HttpRequest, response: HttpResponse) = {
     val json = requestJSON(request)
-    json match {
-      case Some(content) => {
+    val input = json match {
+      case Some(content) if content != null && content.trim.nonEmpty => {
         var in = typedJSON[In](content)
         in = inHttpRequestCaseValue match {
           case Some(cv) => cv.copy(in, request)
@@ -37,35 +39,41 @@ abstract class Service[In <: AnyRef, Out](implicit inManifest: Manifest[In], out
           case Some(cv) => cv.copy(in, response)
           case None => in
         }
-        try {
-          val out = apply(in)
-          outHttpResponseCaseValue match {
-            case Some(cv) => cv[HttpResponse](out.asInstanceOf[AnyRef])
-            case None => response.copy(content = StringContent(toJSON(out).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.OK)
-          }
-        } catch {
-          case t: Throwable => {
-            warn(s"Error occurred in handler function with input of $in.", t)
-            response.copy(content = StringContent(Service.InternalError), status = HttpResponseStatus.InternalServerError)
-          }
-        }
+        in
       }
-      case None => response.copy(content = StringContent(Service.EmptyResponseMessage), status = HttpResponseStatus.BadRequest)
+      case _ => null.asInstanceOf[In]
+    }
+
+    try {
+      val out = apply(input)
+      outHttpResponseCaseValue match {
+        case Some(cv) => cv[HttpResponse](out.asInstanceOf[AnyRef])
+        case None => response.copy(content = StringContent(toJSON(out).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.OK)
+      }
+    } catch {
+      case t: Throwable => {
+        warn(s"Error occurred in handler function with input of $input.", t)
+        response.copy(content = StringContent(Service.InternalError), status = HttpResponseStatus.InternalServerError)
+      }
     }
   }
 
-  private def requestJSON(request: HttpRequest): Option[String] = if (request.content.nonEmpty) {
+  private def requestJSON(request: HttpRequest): Option[String] = if (request.method != Method.Get && request.content.nonEmpty) {
     request.contentString
   } else if (request.url.parameters.values.nonEmpty) {
-    val map = request.url.parameters.values.map {
-      case (key, values) => if (values.tail.nonEmpty) {
-        key -> values
-      } else {
-        key -> values.head
+    if (inManifest.runtimeClass == classOf[String] && request.url.parameters.values.size == 1) {
+      request.url.parameters.values.head._2.headOption.map(s => JString(s).stringify(pretty = pretty()))
+    } else {
+      val map = request.url.parameters.values.map {
+        case (key, values) => if (values.tail.nonEmpty) {
+          key -> values
+        } else {
+          key -> values.head
+        }
       }
+      val json = toJSON(map)
+      Some(json.stringify(pretty = pretty()))
     }
-    val json = toJSON(map)
-    Some(json.stringify(pretty = pretty()))
   } else {
     None
   }
@@ -87,7 +95,7 @@ object Service {
   private val EmptyResponseMessage = "No content in request."
   private val InternalError = "An error occurred processing the service request."
 
-  def apply[In <: AnyRef, Out](f: In => Out)(implicit manifest: Manifest[In], outManifest: Manifest[Out]) = {
+  def apply[In, Out](f: In => Out)(implicit manifest: Manifest[In], outManifest: Manifest[Out]) = {
     new Service[In, Out] {
       override def apply(request: In) = f(request)
     }

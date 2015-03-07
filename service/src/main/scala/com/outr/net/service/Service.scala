@@ -18,6 +18,8 @@ import org.powerscala.reflect._
  * @author Matt Hicks <matt@outr.com>
  */
 abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: Manifest[Out]) extends HttpHandler with Logging {
+  Service     // Make sure companion is initialized
+
   val pretty = Property[Boolean](default = Some(false))
 
   val inHttpRequestCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpRequest]))
@@ -28,20 +30,24 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
 
   override def onReceive(request: HttpRequest, response: HttpResponse) = {
     val json = requestJSON(request)
-    val input = json match {
-      case Some(content) if content != null && content.trim.nonEmpty => {
-        var in = typedJSON[In](content)
-        in = inHttpRequestCaseValue match {
-          case Some(cv) => cv.copy(in, request)
-          case None => in
+    val input = if (inManifest.runtimeClass == classOf[Unit]) {
+      null.asInstanceOf[In]
+    } else {
+      var in = json match {
+        case Some(content) if content != null && content.trim.nonEmpty => {
+          typedJSON[In](content)
         }
-        in = inHttpResponseCaseValue match {
-          case Some(cv) => cv.copy(in, response)
-          case None => in
-        }
-        in
+        case _ => typedJSON[In]("{}")
       }
-      case _ => null.asInstanceOf[In]
+      in = inHttpRequestCaseValue match {
+        case Some(cv) => cv.copy(in, request)
+        case None => in
+      }
+      in = inHttpResponseCaseValue match {
+        case Some(cv) => cv.copy(in, response)
+        case None => in
+      }
+      in
     }
 
     try {
@@ -51,8 +57,12 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
         case None => response.copy(content = StringContent(toJSON(out).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.OK)
       }
     } catch {
+      case exc: ServiceException => {
+        warn(s"ServiceException occurred: ${exc.message} (${exc.code}) with input of $input.", exc.cause)
+        response.copy(content = StringContent(toJSON(exc.response).stringify(pretty = pretty()), ContentType.JSON), status = HttpResponseStatus.InternalServerError)
+      }
       case t: Throwable => {
-        warn(s"Error occurred in handler function with input of $input.", t)
+        error(s"Error occurred in handler function with input of $input.", t)
         response.copy(content = StringContent(Service.InternalError), status = HttpResponseStatus.InternalServerError)
       }
     }
@@ -92,6 +102,8 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
 }
 
 object Service {
+  MapSupport.o2j.excludeClass[ExceptionResponse]
+
   private val EmptyResponseMessage = "No content in request."
   private val InternalError = "An error occurred processing the service request."
 

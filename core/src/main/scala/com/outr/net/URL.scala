@@ -9,6 +9,11 @@ import scala.annotation.tailrec
 
 /**
  * @author Matt Hicks <matt@outr.com>
+ *
+ * @param raw If supplied, this is the URL in string form. It will not be parsed or used internally, but it will be
+ *            returned from toString verbatim. This is intended for situations where the URL was originally in string
+ *            form, then parsed to these args. Instead of rebuilding it (and introducing slight RFC compliant but
+ *            perhaps still undesired differences) the original string representation can be cached.
  */
 case class URL(protocol: Protocol = Protocol.Http,
                host: String = "localhost",
@@ -17,7 +22,8 @@ case class URL(protocol: Protocol = Protocol.Http,
                path: String = "/",
                parameters: HttpParameters = HttpParameters.Empty,
                hash: String = null,
-               isEncoded: Boolean = true) extends HasHostAndPort with HasIP {
+               isEncoded: Boolean = true,
+               raw: Option[String] = None) extends HasHostAndPort with HasIP {
   lazy val base = if (protocol != null) {
     if (host != null) {
       s"$protocol://$hostPort"
@@ -45,7 +51,7 @@ case class URL(protocol: Protocol = Protocol.Http,
    */
   def loadAsString() = IO.copy(javaURL)
 
-  private lazy val s = {
+  private def rebuild = {
     val b = new StringBuilder(baseAndPath)
     if (parameters.values.nonEmpty) {
       b.append(parameters.values.map {
@@ -58,6 +64,8 @@ case class URL(protocol: Protocol = Protocol.Http,
     }
     b.toString()
   }
+
+  private lazy val s = raw.getOrElse(rebuild)
 
   def breakDown = s"protocol: $protocol, host: $host, port: $port, path: $path, parameters: $parameters, hash: $hash"
 
@@ -125,7 +133,7 @@ object URL {
         case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters, raw = Some(url)))
     }
     case URLParser2(_protocol, _path, _parameters) => {
       val protocol = _protocol match {
@@ -137,7 +145,7 @@ object URL {
         case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
-      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters))
+      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters, raw = Some(url)))
     }
     case URLParser3(host, _port, _path, _parameters) => {
       val protocol = Protocol.Http
@@ -150,7 +158,7 @@ object URL {
         case p => parsePath(p)
       }
       val parameters = HttpParameters.parse(_parameters)
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters, raw = Some(url)))
     }
     case _ => None
   }

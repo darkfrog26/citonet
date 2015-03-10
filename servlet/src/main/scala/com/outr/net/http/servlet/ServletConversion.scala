@@ -17,6 +17,8 @@ import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.StringContent
 import org.powerscala.log.Logging
 
+import scala.collection.immutable.ListMap
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -32,9 +34,10 @@ object ServletConversion extends Logging {
       case null => None
       case input => Some(InputStreamContent(input, contentType, servletRequest.getContentLength, lastModified = -1L))
     }
-    val params = HttpParameters(servletRequest.getParameterMap.collect {
-      case (name, values) => name -> values.toList
-    }.toMap)
+    val paramsList = servletRequest.getParameterNames.map {
+      case name => name -> servletRequest.getParameterValues(name).toList
+    }.toList
+    val params = HttpParameters(ListMap(paramsList: _*))
     val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
 
     val headerMap = servletRequest.getHeaderNames.map{ name => name -> getSanitizedHeader(name, servletRequest)}.toMap

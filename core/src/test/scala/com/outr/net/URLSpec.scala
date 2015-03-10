@@ -28,6 +28,21 @@ class URLSpec extends WordSpec with Matchers {
         val url = URL("http://www.outr.com/examples/testing/../../images/../test.png")
         url.path should equal("/test.png")
       }
+      "properly parse an extremely long URL and spit it back syntactically equal" in {
+        val s = "http://www.a.com.qa/pps/a/publish/Pages/System+Pages/Document+View+Page?com.a.b.pagesvc.renderParams.sub-53343f7a_1279673d2a9_-78af0a000136=rp.currentDocumentID%3D-4591476d_14a4cb0cbbf_-6cb00a000121%26"
+        val url = URL(s)
+        url.protocol should equal(Protocol.Http)
+        url.host should equal("www.a.com.qa")
+        url.path should equal("/pps/a/publish/Pages/System+Pages/Document+View+Page")
+        url.parameters.first("com.a.b.pagesvc.renderParams.sub-53343f7a_1279673d2a9_-78af0a000136") should equal("rp.currentDocumentID%3D-4591476d_14a4cb0cbbf_-6cb00a000121%26")
+        url.toString should equal(s)
+        val decoded = url.decoded
+        decoded.path should equal("/pps/a/publish/Pages/System Pages/Document View Page")
+        decoded.parameters.first("com.a.b.pagesvc.renderParams.sub-53343f7a_1279673d2a9_-78af0a000136") should equal("rp.currentDocumentID=-4591476d_14a4cb0cbbf_-6cb00a000121&")
+        val encoded = decoded.encoded
+        encoded.path should equal("/pps/a/publish/Pages/System+Pages/Document+View+Page")
+        encoded.parameters.first("com.a.b.pagesvc.renderParams.sub-53343f7a_1279673d2a9_-78af0a000136") should equal("rp.currentDocumentID%3D-4591476d_14a4cb0cbbf_-6cb00a000121%26")
+      }
     }
   }
 }

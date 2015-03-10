@@ -6,7 +6,7 @@ import com.outr.net.http.HttpParameters
  * @author Matt Hicks <matt@outr.com>
  */
 case class FormPostContent(contentString: String) extends HttpContent {
-  val parameters = HttpParameters.parse(contentString)
+  val parameters = HttpParameters.parse(contentString, decode = true)
 
   override def lastModified = -1L
 

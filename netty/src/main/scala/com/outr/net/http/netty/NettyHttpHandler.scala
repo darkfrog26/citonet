@@ -12,6 +12,8 @@ import java.net.InetSocketAddress
 import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.content.URLContent
 
+import scala.collection.immutable.ListMap
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -49,9 +51,9 @@ object NettyHttpHandler {
     val (host, port) = hostAndPort match {
       case HostAndPortRegex(h, p) => h -> (if (p != null && p != "") p.toInt else 80)
     }
-    val parameters = decoder.parameters().map {
+    val parameters = ListMap(decoder.parameters().map {
       case (key, values) => key -> values.toList
-    }.toMap
+    }.toList: _*)
     val ip = IP(channel.remoteAddress().asInstanceOf[InetSocketAddress].getAddress.getHostAddress)
     URL(Protocol.Http, host, port, ip, decoder.path(), HttpParameters(parameters))
   }

@@ -38,7 +38,7 @@ case class URL(protocol: Protocol = Protocol.Http,
     null
   }
 
-  lazy val javaURL = new net.URL(toString)
+  lazy val javaURL = new net.URL(encoded.toString)
 
   /**
    * Contacts the supplied URL and returns the response as a String.
@@ -49,7 +49,7 @@ case class URL(protocol: Protocol = Protocol.Http,
     val b = new StringBuilder(baseAndPath)
     if (parameters.values.nonEmpty) {
       b.append(parameters.values.map {
-        case (key, values) => values.map(value => "%s=%s".format(URLEncoder.encode(key, "utf-8"), URLEncoder.encode(value, "utf-8")))
+        case (key, values) => values.map(value => s"$key=$value")
       }.flatten.mkString("?", "&", ""))
     }
     if (hash != null && hash.nonEmpty) {
@@ -67,14 +67,18 @@ case class URL(protocol: Protocol = Protocol.Http,
 
   override def toString = s
 
+  private def encode(s: String) = URLEncoder.encode(s, "UTF-8")
+  private def decode(s: String) = URLDecoder.decode(s, "UTF-8")
+
   def encoded = if (isEncoded) {
     this
   } else {
-    copy(path = URLEncoder.encode(path, "UTF-8"), isEncoded = true)   // TODO: encode more than just path
+    val encodedPath = path.split("/").map(encode).mkString("/")
+    copy(path = encodedPath, parameters = parameters.encoded, isEncoded = true)
   }
 
   def decoded = if (isEncoded) {
-    copy(path = URLDecoder.decode(path, "UTF-8"), isEncoded = false)  // TODO: decode more than just path
+    copy(path = URLDecoder.decode(path, "UTF-8"), parameters = parameters.decoded, isEncoded = false)
   } else {
     this
   }
@@ -96,7 +100,7 @@ object URL {
   def lookupResource(s: String) = apply(Thread.currentThread().getContextClassLoader.getResource(s))
 
   @tailrec
-  private def parsePath(path: String): String = {
+  final def parsePath(path: String): String = {
     val dotDotIndex = path.indexOf("/../")
     if (dotDotIndex == -1) {
       path
@@ -124,7 +128,7 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters)
+      val parameters = HttpParameters.parse(_parameters, decode = false)
       Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
     }
     case URLParser2(_protocol, _path, _parameters) => {
@@ -136,7 +140,7 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters)
+      val parameters = HttpParameters.parse(_parameters, decode = false)
       Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters))
     }
     case URLParser3(host, _port, _path, _parameters) => {
@@ -149,7 +153,7 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters)
+      val parameters = HttpParameters.parse(_parameters, decode = false)
       Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
     }
     case _ => None

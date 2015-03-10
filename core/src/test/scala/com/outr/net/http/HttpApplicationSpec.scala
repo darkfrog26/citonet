@@ -11,11 +11,11 @@ import org.scalatest.{Matchers, WordSpec}
 class HttpApplicationSpec extends WordSpec with Matchers {
   "TestHttpApplication" should {
     "receive OK for test.html" in {
-      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/test.html").get), HttpResponse.NotFound)
+      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/test.html", encoded = true).get), HttpResponse.NotFound)
       response.status should equal(HttpResponseStatus.OK)
     }
     "receive NotFound for other.html" in {
-      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/other.html").get), HttpResponse.NotFound)
+      val response = TestHttpApplication.onReceive(HttpRequest(URL.parse("http://localhost/other.html", encoded = true).get), HttpResponse.NotFound)
       response.status should equal(HttpResponseStatus.NotFound)
     }
   }

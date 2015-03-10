@@ -54,7 +54,7 @@ class DelayedCrossStream(s: Socket, input: InputStream, output: OutputStream) {
 
   readHeaders()
 
-  def url = URL(s"http://${header("host")}$path")
+  def url = URL.decoded(s"http://${header("host")}$path")
 
   @tailrec
   private def readHeaders(): Unit = bufferLine() match {

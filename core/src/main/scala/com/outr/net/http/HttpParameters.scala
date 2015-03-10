@@ -49,17 +49,11 @@ case class HttpParameters(values: ListMap[String, List[String]] = ListMap.empty,
 object HttpParameters {
   val Empty = HttpParameters()
 
-  private def convert(s: String, decode: Boolean) = if (decode) {
-    URLDecoder.decode(s, "utf-8")
-  } else {
-    s
-  }
-
-  def parse(params: String, decode: Boolean): HttpParameters = {
+  def parse(params: String, encoded: Boolean): HttpParameters = {
     if (params == null) {
       HttpParameters()
     } else if (params.startsWith("?")) {
-      parse(params.substring(1), decode)
+      parse(params.substring(1), encoded)
     } else {
       var parameters = ListMap.empty[String, List[String]]
       if (params.length > 1) {
@@ -67,9 +61,9 @@ object HttpParameters {
           case entry => {
             val split = entry.indexOf('=')
             val (key, value) = if (split == -1) {
-              convert(entry, decode) -> null
+              entry -> null
             } else {
-              convert(entry.substring(0, split), decode) -> convert(entry.substring(split + 1), decode)
+              entry.substring(0, split) -> entry.substring(split + 1)
             }
             val entries = parameters.getOrElse(key, Nil)
             if (value == null) {
@@ -80,7 +74,7 @@ object HttpParameters {
           }
         }
       }
-      HttpParameters(parameters)
+      HttpParameters(parameters, isEncoded = encoded)
     }
   }
 }

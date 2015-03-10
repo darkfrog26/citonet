@@ -37,8 +37,8 @@ object ServletConversion extends Logging {
     val paramsList = servletRequest.getParameterNames.map {
       case name => name -> servletRequest.getParameterValues(name).toList
     }.toList
-    val params = HttpParameters(ListMap(paramsList: _*))
-    val url = URL.parse(requestURL).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
+    val params = HttpParameters(ListMap(paramsList: _*), isEncoded = false)
+    val url = URL.parse(requestURL, encoded = false).getOrElse(throw new NullPointerException(s"Unable to parse: [$requestURL]")).copy(ip = IP(servletRequest.getLocalAddr), parameters = params)
 
     val headerMap = servletRequest.getHeaderNames.map{ name => name -> getSanitizedHeader(name, servletRequest)}.toMap
 

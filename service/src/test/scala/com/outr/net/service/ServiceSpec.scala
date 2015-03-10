@@ -19,14 +19,14 @@ class ServiceSpec extends WordSpec with Matchers {
       ReverseService.bindTo(TestApplication, "/service")
     }
     "call the service with GET parameters" in {
-      val response = TestApplication.onReceive(HttpRequest(url = URL("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound))
+      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound))
       response.status should equal(HttpResponseStatus.OK)
       response.content.contentType should equal(ContentType.JSON)
       response.content.asString should equal("""{"name":"olleH"}""")
     }
     "call the service with POST JSON" in {
       val content = StringContent("""{"name":"Hello"}""", ContentType.JSON)
-      val response = TestApplication.onReceive(HttpRequest(url = URL("http://localhost/service"), method = Method.Post, content = Some(content)), HttpResponse(status = HttpResponseStatus.NotFound))
+      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service"), method = Method.Post, content = Some(content)), HttpResponse(status = HttpResponseStatus.NotFound))
       response.status should equal(HttpResponseStatus.OK)
       response.content.contentType should equal(ContentType.JSON)
       response.content.asString should equal("""{"name":"olleH"}""")
@@ -35,7 +35,7 @@ class ServiceSpec extends WordSpec with Matchers {
       ReverseService.unbindFrom(TestApplication, "/service")
     }
     "verify the service is no longer receiving" in {
-      TestApplication.onReceive(HttpRequest(url = URL("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
+      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
     }
   }
   "SpecialService" should {
@@ -48,7 +48,7 @@ class ServiceSpec extends WordSpec with Matchers {
       SpecialService.lastResponse should equal(null)
     }
     "call the service with GET parameters" in {
-      val httpRequest = HttpRequest(url = URL("http://localhost/special?test=Hello"))
+      val httpRequest = HttpRequest(url = URL.encoded("http://localhost/special?test=Hello"))
       val httpResponse = HttpResponse(status = HttpResponseStatus.NotFound)
       val response = TestApplication.onReceive(httpRequest, httpResponse)
       response.status should equal(HttpResponseStatus.OK)
@@ -62,7 +62,7 @@ class ServiceSpec extends WordSpec with Matchers {
       SpecialService.unbindFrom(TestApplication, "/special")
     }
     "verify the service is no longer receiving" in {
-      TestApplication.onReceive(HttpRequest(url = URL("http://localhost/special?test=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
+      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/special?test=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
     }
   }
 }

@@ -62,7 +62,7 @@ case class URL(protocol: Protocol = Protocol.Http,
   def breakDown = s"protocol: $protocol, host: $host, port: $port, path: $path, parameters: $parameters, hash: $hash"
 
   def param(key: String, value: String) = {
-    copy(parameters = parameters + (key -> value))
+    copy(parameters = (parameters + (key -> value)).copy(isEncoded = isEncoded))
   }
 
   override def toString = s
@@ -89,10 +89,11 @@ object URL {
   val URLParser2 = """([a-zA-Z0-9:]+:)(/.+)([?].*)?""".r
   val URLParser3 = """([\p{Alnum}-.]*):?(\d*)(/.*?)?([?].*)?""".r
 
-  def apply(url: String): URL = parse(url).getOrElse(throw new RuntimeException(s"Unable to parse URL: $url"))
+  def encoded(url: String): URL = parse(url, encoded = true).getOrElse(throw new RuntimeException(s"Unable to parse URL: $url"))
+  def decoded(url: String): URL = parse(url, encoded = false).getOrElse(throw new RuntimeException(s"Unable to parse URL: $url"))
 
   def apply(url: net.URL): URL = if (url != null) {
-    parse(url.toString).getOrElse(throw new RuntimeException(s"Unable to parse java.net.URL($url) to com.outr.net.URL."))
+    parse(url.toString, encoded = true).getOrElse(throw new RuntimeException(s"Unable to parse java.net.URL($url) to com.outr.net.URL."))
   } else {
     null
   }
@@ -117,7 +118,7 @@ object URL {
     }
   }
 
-  def parse(url: String) = url match {
+  def parse(url: String, encoded: Boolean) = url match {
     case URLParser(_protocol, host, _port, _path, _parameters) => {
       val protocol = Protocol.byScheme(_protocol.substring(0, _protocol.lastIndexOf(':')))
       val port = _port match {
@@ -128,8 +129,8 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters, decode = false)
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
+      val parameters = HttpParameters.parse(_parameters, encoded)
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters, isEncoded = encoded))
     }
     case URLParser2(_protocol, _path, _parameters) => {
       val protocol = _protocol match {
@@ -140,8 +141,8 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters, decode = false)
-      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters))
+      val parameters = HttpParameters.parse(_parameters, encoded)
+      Some(URL(protocol = protocol, host = null, port = -1, path = path, parameters = parameters, isEncoded = encoded))
     }
     case URLParser3(host, _port, _path, _parameters) => {
       val protocol = Protocol.Http
@@ -153,8 +154,8 @@ object URL {
         case null => "/"
         case p => parsePath(p)
       }
-      val parameters = HttpParameters.parse(_parameters, decode = false)
-      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters))
+      val parameters = HttpParameters.parse(_parameters, encoded)
+      Some(URL(protocol = protocol, host = host, port = port, path = path, parameters = parameters, isEncoded = encoded))
     }
     case _ => None
   }

@@ -14,7 +14,7 @@ class HttpClientSpec extends WordSpec with Matchers {
 
   "HttpClient" should {
     "do a request to captiveimagination.com and get proper headers and content back" in {
-      val request = HttpRequest(URL("http://www.captiveimagination.com"))
+      val request = HttpRequest(URL.encoded("http://www.captiveimagination.com"))
       val response = client.send(request)
       response.status should equal(HttpResponseStatus.OK)
       response.content.asString.trim should equal("captiveimagination.com")
@@ -25,7 +25,7 @@ class HttpClientSpec extends WordSpec with Matchers {
       response.cookies.size should equal(0)
     }
     "do a request to google.com and get proper content response" in {
-      val request = HttpRequest(URL("http://www.google.com"))
+      val request = HttpRequest(URL.encoded("http://www.google.com"))
       val response = client.send(request)
       response.status should equal(HttpResponseStatus.OK)
       response.headers("Server") should equal("gws")

@@ -12,7 +12,9 @@ import org.powerscala.reflect._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait SessionApplication[S <: Session] extends HandlerApplication with Logging {
+trait SessionApplication extends HandlerApplication with Logging {
+  type S <: Session
+
   private var _sessions = Map.empty[String, S]
   lazy val sessions = new Sessions
 

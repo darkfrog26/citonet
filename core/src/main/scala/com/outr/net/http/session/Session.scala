@@ -12,7 +12,7 @@ import org.powerscala.event.processor.UnitProcessor
  */
 trait Session extends Temporal with Listenable with Storage[Any, Any] {
   def id: String
-  def application: SessionApplication[_]
+  def application: SessionApplication
 
   /**
    * Fired when a session value changes in this session.

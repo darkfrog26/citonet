@@ -88,13 +88,13 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
     None
   }
 
-  def bindTo[S <: Session](application: WebApplication[S], uris: String*) = {
+  def bindTo(application: WebApplication, uris: String*) = {
     uris.foreach {
       case uri => PathMappingHandler.add(application, uri, this)
     }
   }
 
-  def unbindFrom[S <: Session](application: WebApplication[S], uris: String*) = {
+  def unbindFrom[S <: Session](application: WebApplication, uris: String*) = {
     uris.foreach {
       case uri => PathMappingHandler.remove(application, uri)
     }

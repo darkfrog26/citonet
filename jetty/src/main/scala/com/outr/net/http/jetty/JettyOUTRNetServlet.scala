@@ -50,7 +50,7 @@ class JettyOUTRNetServlet extends WebSocketServlet with WebSocketCreator with Lo
       }
       // Make sure the session is available in the WebSocket
       support.application match {
-        case sa: SessionApplication[_] => sa.lookupAndStoreSession(request)
+        case sa: SessionApplication => sa.lookupAndStoreSession(request)
         case _ => // Ignore non Session application
       }
       support.application.around(request) {

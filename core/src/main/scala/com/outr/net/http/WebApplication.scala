@@ -12,7 +12,7 @@ import org.powerscala.Priority
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class WebApplication[S <: Session] extends SessionApplication[S] with NotFoundApplication {
+abstract class WebApplication extends SessionApplication with NotFoundApplication {
   def addContent(creator: => HttpContent, uris: String*): HttpHandler = {
     addContent(request => creator, uris: _*)
   }

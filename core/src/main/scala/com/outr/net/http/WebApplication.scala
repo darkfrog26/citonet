@@ -9,6 +9,8 @@ import com.outr.net.http.response.HttpResponse
 import com.outr.net.http.session.{Session, SessionApplication}
 import org.powerscala.Priority
 
+import scala.util.matching.Regex
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -24,6 +26,16 @@ abstract class WebApplication extends SessionApplication with NotFoundApplicatio
   def addHandler(handler: HttpHandler, uris: String*): HttpHandler = {
     uris.foreach {
       case uri => PathMappingHandler.add(this, uri, handler)
+    }
+    handler
+  }
+
+  def addHandler(handler: HttpHandler, r: Regex, pathOnly: Boolean = true): HttpHandler = {
+    handlers.on {
+      case (request, response) if r.pattern.matcher(if (pathOnly) request.url.path else request.url.toString).matches() => {
+        handler.onReceive(request, response)
+      }
+      case (request, response) => response
     }
     handler
   }

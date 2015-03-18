@@ -67,7 +67,9 @@ class ServiceSpec extends WordSpec with Matchers {
   }
 }
 
-object TestApplication extends WebApplication[MapSession] {
+object TestApplication extends WebApplication {
+  override type S = MapSession
+
   override protected def init() = {}
 
   override protected def createSession(request: HttpRequest, id: String) = new MapSession(id, this)

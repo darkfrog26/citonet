@@ -1,4 +1,6 @@
 outrnet
 =======
 
+[![Build Status](http://build.outr.com/buildStatus/icon?job=outrnet)](http://build.outr.com/job/outrnet/)
+
 Foundational HTTP abstraction layer with multiple implementations, client support, and proxy server (support WebSockets).

@@ -33,7 +33,7 @@ class HttpClientSpec extends WordSpec with Matchers {
       val cookie = response.cookies.find(c => c.name == "PREF").get
       cookie.value should include("ID=")
       cookie.value should include(":FF=0:TM=")
-      cookie.domain should equal(".google.com")
+      cookie.domain should equal("google.com")
       cookie.httpOnly should equal(false)
       cookie.secure should equal(false)
       cookie.version should equal(0)

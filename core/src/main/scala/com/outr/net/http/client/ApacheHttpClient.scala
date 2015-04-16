@@ -10,7 +10,7 @@ import org.apache.http.config.RegistryBuilder
 import org.apache.http.cookie
 import org.apache.http.cookie.{CookieOrigin, CookieSpec, CookieSpecProvider}
 import org.apache.http.impl.client.{CloseableHttpClient, BasicCookieStore, HttpClients}
-import org.apache.http.impl.cookie.{BrowserCompatSpecFactory, BestMatchSpecFactory, BrowserCompatSpec, BasicClientCookie}
+import org.apache.http.impl.cookie._
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.protocol.HttpContext
 import org.powerscala.concurrent.Time
@@ -27,7 +27,7 @@ import org.apache.http.entity.{ContentType => ApacheContentType, StringEntity, I
  */
 object ApacheHttpClient extends HttpClient with Logging {
   private val IgnoredHeaders = Set("Content-Length")
-  private val CookieSpecRegistry = RegistryBuilder.create[CookieSpecProvider]().register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory()).register(CookieSpecs.BROWSER_COMPATIBILITY, new BrowserCompatSpecFactory()).register("easy", EasyCookieSpecProvider).build()
+  private val CookieSpecRegistry = RegistryBuilder.create[CookieSpecProvider]().register(CookieSpecs.DEFAULT, new DefaultCookieSpecProvider).register(CookieSpecs.DEFAULT, new DefaultCookieSpecProvider).register("easy", EasyCookieSpecProvider).build()
 
   def send(request: HttpRequest) = {
     debug(s"HttpClient.send ${request.url}")
@@ -79,6 +79,7 @@ object ApacheHttpClient extends HttpClient with Logging {
         }
         post
       }
+      case _ => throw new RuntimeException(s"Unsupported request method: ${request.method}")
     }
     request.headers.values.foreach {
       case (key, value) => if (!IgnoredHeaders.contains(key)) {   // Content-Length is special and is set above if set
@@ -146,7 +147,7 @@ case class HttpClientInputStream(client: CloseableHttpClient, wrapped: InputStre
 }
 
 object EasyCookieSpecProvider extends CookieSpecProvider {
-  override def create(context: HttpContext) = new BrowserCompatSpec() {
+  override def create(context: HttpContext) = new DefaultCookieSpec {
     override def validate(c: cookie.Cookie, origin: CookieOrigin): Unit = {}
   }
 }

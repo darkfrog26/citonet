@@ -1,11 +1,13 @@
 package com.outr.net.http.response
 
-import org.powerscala.enum.{EnumEntry, Enumerated}
-
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class HttpResponseStatus private(val code: Int, val message: String) extends EnumEntry {
+class HttpResponseStatus private(val code: Int, val message: String) {
+  HttpResponseStatus.synchronized {
+    HttpResponseStatus.codeMap += code -> this
+  }
+
   def isInformation = code >= 100 && code < 200
   def isSuccess = code >= 200 && code < 300
   def isRedirection = code >= 300 && code < 400
@@ -17,7 +19,9 @@ class HttpResponseStatus private(val code: Int, val message: String) extends Enu
   def apply(message: String) = new HttpResponseStatus(code, message)
 }
 
-object HttpResponseStatus extends Enumerated[HttpResponseStatus] {
+object HttpResponseStatus {
+  private var codeMap = Map.empty[Int, HttpResponseStatus]
+
   val Continue = new HttpResponseStatus(100, "Continue")
   val SwitchingProtocols = new HttpResponseStatus(101, "Switching Protocols")
   val Processing = new HttpResponseStatus(102, "Processing")
@@ -77,6 +81,6 @@ object HttpResponseStatus extends Enumerated[HttpResponseStatus] {
   val NotExtended = new HttpResponseStatus(510, "Not Extended")
   val NetworkAuthenticationRequired = new HttpResponseStatus(511, "Network Authentication Required")
 
-  def getByCode(code: Int) = values.find(s => s.code == code)
+  def getByCode(code: Int) = codeMap.get(code)
   def byCode(code: Int) = getByCode(code).getOrElse(throw new RuntimeException(s"Unable to find HttpResponseStatus by code: $code"))
 }

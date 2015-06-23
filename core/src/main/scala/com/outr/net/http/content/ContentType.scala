@@ -26,6 +26,7 @@ object ContentType {
   lazy val XML = new ContentType("text/xml")
   lazy val JSON = new ContentType("application/json")
   lazy val CSV = new ContentType("text/csv")
+  lazy val PDF = new ContentType("application/pdf")
   lazy val FormURLEncoded = new ContentType("application/x-www-form-urlencoded")
   lazy val MultiPartFormData = new ContentType("multipart/form-data")
 

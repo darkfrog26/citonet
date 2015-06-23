@@ -65,4 +65,5 @@ object HttpRequestHeaders {
   val ForwardedFor = "X-Forwarded-For"
   val ForwardedForHost = "X-Forwarded-For-Host"
   val ForwardedForPort = "X-Forwarded-For-Port"
+  val Authorization = "Authorization"
 }

@@ -90,7 +90,7 @@ object OUTRNetBuild extends Build {
 }
 
 object Dependencies {
-  private val PowerScalaVersion = "1.6.9-SNAPSHOT"
+  private val PowerScalaVersion = "1.6.10-SNAPSHOT"
   private val JettyVersion = "9.2.10.v20150310"
   private val TomcatVersion = "8.0.21"
 

@@ -1,6 +1,7 @@
 package com.outr.net.http.servlet
 
 import java.net.SocketTimeoutException
+import java.util.Date
 import java.util.concurrent.TimeoutException
 
 import com.outr.net.{IP, Method, ArrayBufferPool, URL}
@@ -10,7 +11,7 @@ import com.outr.net.http.request.{HttpRequestHeaders, HttpRequest}
 import javax.servlet.http
 import com.outr.net.http.content._
 import java.nio.charset.Charset
-import com.outr.net.http.HttpParameters
+import com.outr.net.http.{HttpApplication, HttpParameters}
 import com.outr.net.http.content.InputStreamContent
 import org.powerscala._
 import com.outr.net.http.response.HttpResponse
@@ -111,7 +112,7 @@ object ServletConversion extends Logging {
       }
       servletResponse.setCharacterEncoding("UTF-8")
       if (response.content.lastModified != -1) {    // Send last modified if available
-        val date = "%1$ta, %1$te %1$tb %1$tY %1$tT %1$tZ".format(response.content.lastModified)
+        val date = HttpApplication.DateParser.format(new Date(response.content.lastModified))
         servletResponse.setHeader("Last-Modified", date)
       }
       if (gzip) {

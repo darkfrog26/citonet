@@ -89,7 +89,7 @@ object HttpApplication {
 
   def requestOption = _request.get()
 
-  def dateParser(locale: Option[Locale]) = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz", locale.getOrElse(Locale.getDefault))
+  def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz", Locale.ENGLISH)
 
   def around[R](request: HttpRequest)(f: => R): R = {
     _request.set(Option(request))

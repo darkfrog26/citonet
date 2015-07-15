@@ -15,11 +15,6 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   lazy val IfModifiedSince = date(HttpRequestHeaders.IfModifiedSince)
   lazy val AcceptEncoding = get(HttpRequestHeaders.AcceptEncoding)
   lazy val UserAgent = get(HttpRequestHeaders.UserAgent)
-  lazy val locale = get(HttpRequestHeaders.AcceptLanguage).map {
-    case s if s.indexOf(',') != -1 => s.substring(0, s.indexOf(','))
-    case s if s.indexOf(';') != -1 => s.substring(0, s.indexOf(';'))
-    case s => s
-  }.map(Locale.forLanguageTag)
 
   def parseCookies() = {
     get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
@@ -54,9 +49,9 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   def date(key: String) = values.get(key) match {
     case Some(value) if value.nonEmpty =>
       Try(
-        Some(HttpApplication.dateParser(locale).parse(value).getTime)
+        Some(HttpApplication.DateParser.parse(value).getTime)
       ).getOrElse {
-        warn(s"Unable to parse date from ($key): [value=$value, locale=$locale]")
+        warn(s"Unable to parse date from ($key): [value=$value]")
         None
       }
 

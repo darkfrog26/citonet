@@ -1,5 +1,7 @@
 package com.outr.net.http.request
 
+import java.util.Locale
+
 import com.outr.net.http.{Cookie, HttpApplication, HttpHeaders}
 import org.powerscala.log.Logging
 
@@ -10,6 +12,11 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   lazy val IfModifiedSince = date(HttpRequestHeaders.IfModifiedSince)
   lazy val AcceptEncoding = get(HttpRequestHeaders.AcceptEncoding)
   lazy val UserAgent = get(HttpRequestHeaders.UserAgent)
+  lazy val locale = get(HttpRequestHeaders.AcceptLanguage).map {
+    case s if s.indexOf(',') != -1 => s.substring(0, s.indexOf(','))
+    case s if s.indexOf(';') != -1 => s.substring(0, s.indexOf(';'))
+    case s => s
+  }.map(Locale.forLanguageTag)
 
   def parseCookies() = {
     get("Cookie").map(s => s.split(";").map(parseCookie).toMap) match {
@@ -43,7 +50,7 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
 
   def date(key: String) = values.get(key) match {
     case Some(value) if value.nonEmpty => try {
-      Some(HttpApplication.DateParser.parse(value).getTime)
+      Some(HttpApplication.dateParser(locale).parse(value).getTime)
     } catch {
       case exc: NumberFormatException => {
         warn(s"Unable to parse date from ($key): [$value]", exc)
@@ -61,6 +68,7 @@ object HttpRequestHeaders {
 
   val IfModifiedSince = "If-Modified-Since"
   val AcceptEncoding = "Accept-Encoding"
+  val AcceptLanguage = "Accept-Language"
   val UserAgent = "User-Agent"
   val ForwardedFor = "X-Forwarded-For"
   val ForwardedForHost = "X-Forwarded-For-Host"

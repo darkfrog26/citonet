@@ -1,5 +1,7 @@
 package com.outr.net.http
 
+import java.util.Locale
+
 import org.powerscala.event.Listenable
 import java.text.SimpleDateFormat
 import com.outr.net.http.request.HttpRequest
@@ -87,7 +89,7 @@ object HttpApplication {
 
   def requestOption = _request.get()
 
-  def DateParser = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz")
+  def dateParser(locale: Option[Locale]) = new SimpleDateFormat("EEE, dd MMMM yyyy HH:mm:ss zzz", locale.getOrElse(Locale.getDefault))
 
   def around[R](request: HttpRequest)(f: => R): R = {
     _request.set(Option(request))

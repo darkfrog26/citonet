@@ -2,8 +2,11 @@ package com.outr.net.http.request
 
 import java.util.Locale
 
-import com.outr.net.http.{Cookie, HttpApplication, HttpHeaders}
+import scala.util.Try
+
 import org.powerscala.log.Logging
+
+import com.outr.net.http.{Cookie, HttpApplication, HttpHeaders}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -49,14 +52,14 @@ case class HttpRequestHeaders(values: Map[String, String]) extends HttpHeaders w
   }
 
   def date(key: String) = values.get(key) match {
-    case Some(value) if value.nonEmpty => try {
-      Some(HttpApplication.dateParser(locale).parse(value).getTime)
-    } catch {
-      case exc: NumberFormatException => {
-        warn(s"Unable to parse date from ($key): [$value]", exc)
+    case Some(value) if value.nonEmpty =>
+      Try(
+        Some(HttpApplication.dateParser(locale).parse(value).getTime)
+      ).getOrElse {
+        warn(s"Unable to parse date from ($key): [value=$value, locale=$locale]")
         None
       }
-    }
+
     case _ => None
   }
 

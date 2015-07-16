@@ -16,53 +16,53 @@ import org.scalatest.{Matchers, WordSpec}
 class ServiceSpec extends WordSpec with Matchers {
   "ReverseService" should {
     "configure the service" in {
-      ReverseService.bindTo(TestApplication, "/service")
+      TestServices.reverse.bind()
     }
     "call the service with GET parameters" in {
-      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound))
+      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/test/reverse?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound))
       response.status should equal(HttpResponseStatus.OK)
       response.content.contentType should equal(ContentType.JSON)
       response.content.asString should equal("""{"name":"olleH"}""")
     }
     "call the service with POST JSON" in {
       val content = StringContent("""{"name":"Hello"}""", ContentType.JSON)
-      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service"), method = Method.Post, content = Some(content)), HttpResponse(status = HttpResponseStatus.NotFound))
+      val response = TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/test/reverse"), method = Method.Post, content = Some(content)), HttpResponse(status = HttpResponseStatus.NotFound))
       response.status should equal(HttpResponseStatus.OK)
       response.content.contentType should equal(ContentType.JSON)
       response.content.asString should equal("""{"name":"olleH"}""")
     }
     "unbind the service" in {
-      ReverseService.unbindFrom(TestApplication, "/service")
+      TestServices.reverse.unbind()
     }
     "verify the service is no longer receiving" in {
-      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/service?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
+      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/test/reverse?name=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
     }
   }
   "SpecialService" should {
     "configure the service" in {
-      SpecialService.bindTo(TestApplication, "/special")
+      TestServices.special.bind()
     }
     "verify last is unset" in {
-      SpecialService.lastTest should equal(null)
-      SpecialService.lastRequest should equal(null)
-      SpecialService.lastResponse should equal(null)
+      TestServices.special.lastTest should equal(null)
+      TestServices.special.lastRequest should equal(null)
+      TestServices.special.lastResponse should equal(null)
     }
     "call the service with GET parameters" in {
-      val httpRequest = HttpRequest(url = URL.encoded("http://localhost/special?test=Hello"))
+      val httpRequest = HttpRequest(url = URL.encoded("http://localhost/test/special?test=Hello"))
       val httpResponse = HttpResponse(status = HttpResponseStatus.NotFound)
       val response = TestApplication.onReceive(httpRequest, httpResponse)
       response.status should equal(HttpResponseStatus.OK)
       response.content.contentType should equal(ContentType.Plain)
       response.content.asString should equal("HELLO")
-      SpecialService.lastTest should equal("Hello")
-      SpecialService.lastRequest should equal(httpRequest)
-      SpecialService.lastResponse shouldNot equal(null)
+      TestServices.special.lastTest should equal("Hello")
+      TestServices.special.lastRequest should equal(httpRequest)
+      TestServices.special.lastResponse shouldNot equal(null)
     }
     "unbind the service" in {
-      SpecialService.unbindFrom(TestApplication, "/special")
+      TestServices.special.unbind()
     }
     "verify the service is no longer receiving" in {
-      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/special?test=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
+      TestApplication.onReceive(HttpRequest(url = URL.encoded("http://localhost/test/special?test=Hello")), HttpResponse(status = HttpResponseStatus.NotFound)).status should equal(HttpResponseStatus.NotFound)
     }
   }
 }
@@ -75,17 +75,21 @@ object TestApplication extends WebApplication {
   override protected def createSession(request: HttpRequest, id: String) = new MapSession(id, this)
 }
 
-object ReverseService extends Service[Receiving, Sending] {
-  MapSupport.o2j.removeWhen("class", JString("com.outr.net.service.Sending"))
+object TestServices extends Services {
+  override def application = TestApplication
+  override def path = "/test"
 
-  override def apply(receiving: Receiving) = Sending(receiving.name.reverse)
+  val reverse = new Service[Receiving, Sending]("/reverse", autoBind = false) {
+    override def apply(request: Receiving): Sending = Sending(request.name.reverse)
+  }
+  val special = new SpecialService
 }
 
 case class Receiving(name: String)
 
 case class Sending(name: String)
 
-object SpecialService extends Service[SpecialReceive, SpecialResponse] {
+class SpecialService(implicit application: WebApplication, services: Services) extends Service[SpecialReceive, SpecialResponse]("/special", autoBind = false) {
   var lastTest: String = _
   var lastRequest: HttpRequest = _
   var lastResponse: HttpResponse = _

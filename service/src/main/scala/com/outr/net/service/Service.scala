@@ -17,7 +17,14 @@ import org.powerscala.reflect._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: Manifest[Out]) extends HttpHandler with Logging {
+abstract class Service[In, Out](binder: ServiceBinder,
+                                excludeClass: Boolean = true,
+                                autoBind: Boolean = true,
+                                basePath: Option[String] = None)
+                               (implicit inManifest: Manifest[In],
+                                outManifest: Manifest[Out],
+                                application: WebApplication,
+                                servicesParent: Services = null) extends HttpHandler with Logging {
   Service     // Make sure companion is initialized
 
   val pretty = Property[Boolean](default = Some(false))
@@ -25,6 +32,27 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
   val inHttpRequestCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpRequest]))
   val inHttpResponseCaseValue = inManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpResponse]))
   val outHttpResponseCaseValue = outManifest.runtimeClass.caseValues.find(cv => cv.valueType.hasType(classOf[HttpResponse]))
+
+  // Initialize
+  init()
+
+  protected def init() = {
+    if (excludeClass) excludeClassFromOutput[Out]
+    if (autoBind) bind()
+  }
+
+  def rootPath = basePath match {
+    case Some(p) => p
+    case None => servicesParent match {
+      case null => "/"
+      case s => s.path
+    }
+  }
+
+  def bind() = {
+    binder.bindTo(application, rootPath, this)
+  }
+  def unbind() = binder.unbindFrom(application, rootPath, this)
 
   def apply(request: In): Out
 
@@ -94,7 +122,7 @@ abstract class Service[In, Out](implicit inManifest: Manifest[In], outManifest: 
     }
   }
 
-  def unbindFrom[S <: Session](application: WebApplication, uris: String*) = {
+  def unbindFrom(application: WebApplication, uris: String*) = {
     uris.foreach {
       case uri => PathMappingHandler.remove(application, uri)
     }
@@ -106,10 +134,4 @@ object Service {
 
   private val EmptyResponseMessage = "No content in request."
   private val InternalError = "An error occurred processing the service request."
-
-  def apply[In, Out](f: In => Out)(implicit manifest: Manifest[In], outManifest: Manifest[Out]) = {
-    new Service[In, Out] {
-      override def apply(request: In) = f(request)
-    }
-  }
 }

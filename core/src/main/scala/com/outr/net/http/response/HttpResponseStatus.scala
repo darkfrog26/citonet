@@ -17,6 +17,8 @@ class HttpResponseStatus private(val code: Int, val message: String) {
   def isError = isClientError || isServerError
 
   def apply(message: String) = new HttpResponseStatus(code, message)
+
+  override def toString = s"HttpResponseStatus($code: $message)"
 }
 
 object HttpResponseStatus {
